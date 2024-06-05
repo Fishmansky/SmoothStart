@@ -1,0 +1,12 @@
+package views
+
+templ Header() {
+	<div class="bg-mywhite px-12 flex justify-between">
+			<h1 class="p-4 text-dark text-2xl font-semibold">SmoothStart</h1>
+			<div class="flex justify-end place-items-center">
+				<div class="p-2 cursor-pointer font-medium text-xl" hx-get="/home" hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">Home</div>
+				<div class="p-2 cursor-pointer font-medium text-xl" hx-get="/team" hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">Team</div>
+				<div class="p-2 cursor-pointer font-medium text-xl" hx-get="/plans" hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">Plan</div>
+			</div>
+	</div>
+}
