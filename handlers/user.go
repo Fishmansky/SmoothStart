@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"smoothstart/models"
 	"smoothstart/views/user"
 	"strconv"
@@ -8,7 +9,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type UserHandler struct{}
+type UserHandler struct {
+	db *sql.DB
+}
+
+func NewUserHandler(d *sql.DB) *UserHandler {
+	return &UserHandler{
+		db: d,
+	}
+}
 
 func (u UserHandler) HomePage(c echo.Context) error {
 	return render(c, user.Home())

@@ -13,7 +13,13 @@ import (
 )
 
 type LoginHandler struct {
-	Db *sql.DB
+	db *sql.DB
+}
+
+func NewLoginHandler(d *sql.DB) *LoginHandler {
+	return &LoginHandler{
+		db: d,
+	}
 }
 
 func ValidateLoginData(data *models.LoginData) error {
@@ -38,7 +44,7 @@ func (l LoginHandler) HandleLogin(c echo.Context) error {
 		return err
 	}
 	// find user in DB
-	u, err := models.FindUser(l.Db, data)
+	u, err := models.FindUser(l.db, data)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}

@@ -1,13 +1,22 @@
 package handlers
 
 import (
+	"database/sql"
 	"smoothstart/models"
 	"smoothstart/views/admin"
 
 	"github.com/labstack/echo/v4"
 )
 
-type AdminHandler struct{}
+type AdminHandler struct {
+	db *sql.DB
+}
+
+func NewAdminHandler(d *sql.DB) *AdminHandler {
+	return &AdminHandler{
+		db: d,
+	}
+}
 
 func (a AdminHandler) HomePage(ctx echo.Context) error {
 	return render(ctx, admin.Home())

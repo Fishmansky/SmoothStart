@@ -75,9 +75,9 @@ func main() {
 		},
 	}))
 	// handlers
-	uH := handlers.UserHandler{}
-	aH := handlers.AdminHandler{}
-	lH := handlers.LoginHandler{Db: DB}
+	uH := handlers.NewUserHandler(DB)
+	aH := handlers.NewAdminHandler(DB)
+	lH := handlers.NewLoginHandler(DB)
 	auth := auth.AuthHandler{DB: DB}
 
 	e.Static("/", "assets")
