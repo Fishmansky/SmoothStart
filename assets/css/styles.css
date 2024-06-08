@@ -582,36 +582,8 @@ h4 {
   --tw-contain-style:  ;
 }
 
-.container {
-  width: 100%;
-}
-
-@media (min-width: 480px) {
-  .container {
-    max-width: 480px;
-  }
-}
-
-@media (min-width: 768px) {
-  .container {
-    max-width: 768px;
-  }
-}
-
-@media (min-width: 976px) {
-  .container {
-    max-width: 976px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .container {
-    max-width: 1440px;
-  }
-}
-
-.m-4 {
-  margin: 1rem;
+.m-2 {
+  margin: 0.5rem;
 }
 
 .mx-auto {
@@ -647,8 +619,16 @@ h4 {
   height: 2rem;
 }
 
+.h-full {
+  height: 100%;
+}
+
 .w-1\/2 {
   width: 50%;
+}
+
+.w-1\/4 {
+  width: 25%;
 }
 
 .w-8 {
@@ -657,6 +637,16 @@ h4 {
 
 .w-full {
   width: 100%;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
 .cursor-pointer {
@@ -703,6 +693,12 @@ h4 {
   gap: 1rem;
 }
 
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1rem * var(--tw-space-y-reverse));
+}
+
 .rounded {
   border-radius: 0.25rem;
 }
@@ -711,8 +707,16 @@ h4 {
   border-radius: 0.5rem;
 }
 
+.rounded-md {
+  border-radius: 0.375rem;
+}
+
 .rounded-xl {
   border-radius: 0.75rem;
+}
+
+.border {
+  border-width: 1px;
 }
 
 .border-2 {
@@ -722,6 +726,11 @@ h4 {
 .border-dark {
   --tw-border-opacity: 1;
   border-color: rgb(37 40 61 / var(--tw-border-opacity));
+}
+
+.bg-green {
+  --tw-bg-opacity: 1;
+  background-color: rgb(41 115 115 / var(--tw-bg-opacity));
 }
 
 .bg-mywhite {
@@ -746,14 +755,9 @@ h4 {
   padding-right: 3rem;
 }
 
-.py-4 {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .py-3 {
@@ -797,10 +801,32 @@ h4 {
   color: rgb(37 40 61 / var(--tw-text-opacity));
 }
 
+.text-mywhite {
+  --tw-text-opacity: 1;
+  color: rgb(235 242 250 / var(--tw-text-opacity));
+}
+
+.text-yellow {
+  --tw-text-opacity: 1;
+  color: rgb(189 211 88 / var(--tw-text-opacity));
+}
+
 .transition-colors {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+.htmx-indicator{
+  display:none;
+}
+
+.htmx-request .htmx-indicator{
+  display:inline;
+}
+
+.htmx-request.htmx-indicator{
+  display:inline;
 }
 
 .first\:pt-0:first-child {
@@ -825,3 +851,4 @@ h4 {
   --tw-bg-opacity: 1;
   background-color: rgb(189 211 88 / var(--tw-bg-opacity));
 }
+

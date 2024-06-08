@@ -2,53 +2,55 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"log"
 	"log/slog"
-	"net/http"
 	"os"
-	"smoothstart/models"
-	"smoothstart/views"
-	"strconv"
+	"smoothstart/auth"
+	"smoothstart/handlers"
 
-	"github.com/a-h/templ"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	_ "github.com/lib/pq"
 )
 
-var P []models.Plan
+var DB *sql.DB
 
-func renderView(c echo.Context, cmp templ.Component) error {
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
-	return cmp.Render(c.Request().Context(), c.Response().Writer)
-}
-func indexView(c echo.Context) error {
-	cmp := views.IndexComponent()
-	return renderView(c, cmp)
-}
-
-func homeView(c echo.Context) error {
-	v := views.HomeComponent()
-	return renderView(c, v)
-}
-func teamView(c echo.Context) error {
-	v := views.TeamComponent()
-	return renderView(c, v)
-}
-func plansView(c echo.Context) error {
-	v := views.PlansGrid(P)
-	return renderView(c, v)
-}
-func planView(c echo.Context) error {
-	id := c.Param("id")
-	pID, err := strconv.Atoi(id)
+func ConnectDB() {
+	err := godotenv.Load()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, "Plan ID conversion failed")
+		log.Fatal(err)
 	}
-	plan := views.Plan(P[pID])
-	return renderView(c, plan)
+	dbConf := os.Getenv("DBCONNSTR")
+	DB, err = sql.Open("postgres", dbConf)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func DBInit() {
+	_, err := DB.Query("DROP TABLE users;")
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	_, err = DB.Query("CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(255) NOT NULL UNIQUE, fname VARCHAR(255) NOT NULL, sname VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, is_admin BOOLEAN NOT NULL);")
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	_, err = DB.Query("INSERT INTO users (username, fname, sname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "admin", "ad", "min", "test123", 1)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	_, err = DB.Query("INSERT INTO users (username, fname, sname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "user1", "ud", "er", "test123", 0)
+	if err != nil {
+		slog.Error(err.Error())
+	}
 }
 
 func main() {
-	P = []models.Plan{{ID: 0, Name: "Admin", Description: "Route for administrators", Steps: []models.Step{{ID: 0, Description: "Create password", Done: true}, {ID: 1, Description: "Create account"}}}, {ID: 1, Name: "Sales", Description: "Route for salesman", Steps: []models.Step{{ID: 0, Description: "Create password"}, {ID: 1, Description: "Create account"}}}}
+	ConnectDB()
+	DBInit()
 	e := echo.New()
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
@@ -72,11 +74,30 @@ func main() {
 			return nil
 		},
 	}))
+	// handlers
+	uH := handlers.UserHandler{}
+	aH := handlers.AdminHandler{}
+	lH := handlers.LoginHandler{Db: DB}
+	auth := auth.AuthHandler{DB: DB}
+
 	e.Static("/", "assets")
-	e.GET("/", indexView)
-	e.GET("/plans", plansView)
-	e.GET("/plans/:id", planView)
-	e.GET("/home", homeView)
-	e.GET("/team", teamView)
+
+	// routing groups
+
+	admin := e.Group("/admin")
+	user := e.Group("/user")
+
+	// index login page
+	e.GET("/", lH.HandleLoginPage)
+	e.POST("/login", lH.HandleLogin)
+
+	// user routes
+	user.GET("/home", auth.Validate(uH.HomePage))
+	user.GET("/plans", auth.Validate(uH.PlansPage))
+	user.GET("/plans/:id", auth.Validate(uH.HandlePlan))
+
+	// admin routes
+	admin.GET("/home", auth.Validate(aH.HomePage), auth.IsAdmin)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }

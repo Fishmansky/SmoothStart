@@ -1,0 +1,14 @@
+package admin
+
+import "fmt"
+
+templ Step(id int, descr string, b bool) {
+<li class="py-3 first:pt-0 last:pb-0">
+	<input type="checkbox" id={ fmt.Sprintf("%d-%s",id,"step-option") } value="" class="hidden peer" required="" if b { checked } >
+        <label for={ fmt.Sprintf("%d-%s",id,"step-option") } class="inline-flex items-center justify-between w-1/2 p-5 text-dark bg-gray border-2 border-dark rounded-lg cursor-pointer peer-checked:border-green peer-checked:bg-yellow">                           
+    	<div class="block">
+               	<div class="w-full text-lg font-semibold"> { fmt.Sprintf("%d",id) } - { descr } </div>
+       	</div>
+       	</label>
+</li>
+}
