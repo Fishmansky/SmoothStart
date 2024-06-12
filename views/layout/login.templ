@@ -3,7 +3,7 @@ package layout
 import "smoothstart/models"
 
 templ LoginPage(data models.LoginData) {
-	@BaseHTML()
+	@LoginBaseHTML()
 		<form class="flex flex-col mx-auto w-1/4 space-y-4 p-4 rounded rounded-md border-2 border-dark px-4" hx-post="/login" hx-indicator="#login-processing" hx-disabled-elt="input[type='text'], input[type='password'], button">
 			<label for="username" class="font-medium text-xl">Username</label>
 			<input type="text" id="username" name="username" required class="border border-2 border-dark">

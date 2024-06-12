@@ -1,7 +1,7 @@
 package models
 
 type Step struct {
-	ID          int
-	Description string
-	Done        bool
+	ID          int    `json:"id"`
+	Description string `json:"description"`
+	Done        bool   `json:"done"`
 }

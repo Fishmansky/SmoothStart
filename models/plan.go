@@ -1,14 +1,18 @@
 package models
 
 type Plan struct {
-	ID          int `query:"id" param:"id" json:"id"`
-	Name        string
-	Description string
-	Steps       []Step
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	UserID      int    `json:"userid"`
+	Steps       []Step `json:"steps"`
 }
 
 func (p Plan) CompletionStatus() int {
 	result := 0
+	if len(p.Steps) == 0 {
+		return 1
+	}
 	incr := 100 / len(p.Steps)
 	for _, s := range p.Steps {
 		if s.Done {

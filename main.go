@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"log"
 	"log/slog"
 	"os"
 	"smoothstart/auth"
 	"smoothstart/handlers"
+	"smoothstart/models"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -30,7 +32,11 @@ func ConnectDB() {
 }
 
 func DBInit() {
-	_, err := DB.Query("DROP TABLE users;")
+	_, err := DB.Query("DROP TABLE plans;")
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	_, err = DB.Query("DROP TABLE users;")
 	if err != nil {
 		slog.Error(err.Error())
 	}
@@ -38,11 +44,21 @@ func DBInit() {
 	if err != nil {
 		slog.Error(err.Error())
 	}
+	_, err = DB.Query("CREATE TABLE plans (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT, userid INT NOT NULL, steps JSON NULL, FOREIGN KEY (userid) REFERENCES users(id));")
+	if err != nil {
+		slog.Error(err.Error())
+	}
 	_, err = DB.Query("INSERT INTO users (username, fname, sname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "admin", "ad", "min", "test123", 1)
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	_, err = DB.Query("INSERT INTO users (username, fname, sname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "user1", "ud", "er", "test123", 0)
+	_, err = DB.Query("INSERT INTO users (username, fname, sname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "user1", "John", "Long", "test123", 0)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	steps := []models.Step{{ID: 0, Description: "Create account", Done: false}, {ID: 1, Description: "Create password", Done: false}}
+	d, _ := json.Marshal(steps)
+	_, err = DB.Query("INSERT INTO plans (name, description, userid, steps) VALUES ($1, $2, $3, $4);", "user1 plan", "plan for user1", 2, d)
 	if err != nil {
 		slog.Error(err.Error())
 	}
@@ -82,21 +98,18 @@ func main() {
 
 	e.Static("/", "assets")
 
-	// routing groups
-
-	admin := e.Group("/admin")
-	user := e.Group("/user")
-
 	// index login page
 	e.GET("/", lH.HandleLoginPage)
 	e.POST("/login", lH.HandleLogin)
 
 	// user routes
-	user.GET("/home", auth.Validate(uH.HomePage))
-	user.GET("/plans", auth.Validate(uH.PlansPage))
-	user.GET("/plans/:id", auth.Validate(uH.HandlePlan))
+	user := e.Group("/user")
+	user.GET("/home", auth.Validate(uH.HomePage), auth.IsUser)
+	user.GET("/plans", auth.Validate(uH.PlansPage), auth.IsUser)
+	user.GET("/plans/:id", auth.Validate(uH.HandlePlan), auth.IsUser)
 
 	// admin routes
+	admin := e.Group("/admin")
 	admin.GET("/home", auth.Validate(aH.HomePage), auth.IsAdmin)
 
 	e.Logger.Fatal(e.Start(":8080"))

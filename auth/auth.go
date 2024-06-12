@@ -21,6 +21,7 @@ func (a AuthHandler) Validate(next echo.HandlerFunc) echo.HandlerFunc {
 		return next(c)
 	}
 }
+
 func (a AuthHandler) IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// Validate if user is logged in
@@ -37,6 +38,28 @@ func (a AuthHandler) IsAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		if !isAdmin {
 			return c.JSON(http.StatusUnauthorized, "User is not admin")
+		}
+
+		return next(c)
+	}
+}
+
+func (a AuthHandler) IsUser(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// Validate if user is logged in
+		coockie, err := c.Cookie("username")
+		if err != nil {
+			return err
+		}
+		var isAdmin bool
+		if err := a.DB.QueryRow("SELECT is_admin FROM users WHERE username = $1", coockie.Value).Scan(&isAdmin); err != nil {
+			if err == sql.ErrNoRows {
+				return c.JSON(http.StatusUnauthorized, "User not found")
+			}
+			return c.JSON(http.StatusUnauthorized, err)
+		}
+		if isAdmin {
+			return c.JSON(http.StatusUnauthorized, "You are admin, not user")
 		}
 
 		return next(c)

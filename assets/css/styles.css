@@ -582,6 +582,34 @@ h4 {
   --tw-contain-style:  ;
 }
 
+.container {
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .container {
+    max-width: 480px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 976px) {
+  .container {
+    max-width: 976px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1440px;
+  }
+}
+
 .m-2 {
   margin: 0.5rem;
 }
@@ -738,6 +766,11 @@ h4 {
   background-color: rgb(235 242 250 / var(--tw-bg-opacity));
 }
 
+.bg-yellow {
+  --tw-bg-opacity: 1;
+  background-color: rgb(189 211 88 / var(--tw-bg-opacity));
+}
+
 .p-2 {
   padding: 0.5rem;
 }
@@ -763,6 +796,11 @@ h4 {
 .py-3 {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .pt-4 {
