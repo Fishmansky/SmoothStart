@@ -60,7 +60,22 @@ func (a AdminHandler) HomePage(c echo.Context) error {
 	return render(c, admin.Home(data))
 }
 func (a AdminHandler) TeamPage(c echo.Context) error {
-	return render(c, admin.Team())
+	var users []models.User
+	rows, err := a.db.Query("SELECT id, fname, sname FROM users WHERE is_admin = '0'")
+	if err != nil {
+		return c.JSON(http.StatusNoContent, "No teammates found")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var u models.User
+		err := rows.Scan(&u.ID, &u.Fname, &u.Sname)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, "Error scanning user sql")
+		}
+		users = append(users, u)
+	}
+	return render(c, admin.Team(users))
 }
 func (a AdminHandler) PlansPage(c echo.Context) error {
 	var plans []models.Plan

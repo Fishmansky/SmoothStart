@@ -1,11 +1,23 @@
 package admin
 
-import "smoothstart/views/layout"
+import (
+	"smoothstart/views/layout"
+	"smoothstart/models"
+)
 
-templ Team() {
+templ Team(users []models.User) {
 	@layout.BaseHTML()
 	@Header()
 	<div class="container mx-auto">
 		<h1>Your team</h1>
+		<div class="flex justify-center">
+		<ul class="w-1/2" role="list">
+		for _, u := range users {
+			<li class="py-3 first:pt-0 last:pb-0">
+				<h3 class="px-4 py-4 rounded rounded-md bg-yellow"> { u.Fname } { u.Sname } </h3>
+				</li>
+		}
+		</ul>
+		</div>	
 	</div>
 }
