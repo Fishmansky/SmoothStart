@@ -10,9 +10,7 @@ import "context"
 import "io"
 import "bytes"
 
-import "smoothstart/views/layout"
-
-func Team() templ.Component {
+func Header() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -25,15 +23,7 @@ func Team() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = layout.BaseHTML().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Header().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"container mx-auto\"><h1>Your team</h1></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"bg-mywhite px-12 flex justify-between\"><h1 class=\"p-4 text-dark text-2xl font-semibold\">SmoothStart</h1><div class=\"flex justify-end place-items-center\"><a class=\"p-2 cursor-pointer font-medium text-xl\" href=\"/admin/home\">Home</a> <a class=\"p-2 cursor-pointer font-medium text-xl\" href=\"/admin/team\">Team</a> <a class=\"p-2 cursor-pointer font-medium text-xl\" href=\"/admin/plans\">Plan</a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

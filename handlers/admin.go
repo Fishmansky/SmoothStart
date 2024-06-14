@@ -63,6 +63,25 @@ func (a AdminHandler) TeamPage(c echo.Context) error {
 	return render(c, admin.Team())
 }
 func (a AdminHandler) PlansPage(c echo.Context) error {
-	P := []models.Plan{{ID: 0, Name: "Admin", Description: "Route for administrators", Steps: []models.Step{{ID: 0, Description: "Create password", Done: true}, {ID: 1, Description: "Create account"}}}, {ID: 1, Name: "Sales", Description: "Route for salesman", Steps: []models.Step{{ID: 0, Description: "Create password"}, {ID: 1, Description: "Create account"}}}}
-	return render(c, admin.Plans(P))
+	var plans []models.Plan
+	rows, err := a.db.Query("Select * FROM plans")
+	if err != nil {
+		slog.Info(err.Error())
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var p models.Plan
+		var s []byte
+		var uId int
+		err := rows.Scan(&p.ID, &p.Name, &p.Description, &uId, &s)
+		if err != nil {
+			slog.Error(err.Error())
+			return c.JSON(http.StatusInternalServerError, "Error scanning plan sql")
+		}
+		var steps []models.Step
+		json.Unmarshal(s, &steps)
+		p.Steps = append(p.Steps, steps...)
+		plans = append(plans, p)
+	}
+	return render(c, admin.Plans(plans))
 }

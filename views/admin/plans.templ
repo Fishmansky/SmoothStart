@@ -28,7 +28,9 @@ templ PlanGridElem(p models.Plan) {
 }
 
 templ Plans(plans []models.Plan) {
-	@layout.BaseHTML(true)
+	@layout.BaseHTML()
+	@Header()
+	<div class="container mx-auto">
 	<h1>Plans</h1>
 	<div class="flex justify-start items-center gap-4">
 		<h1>Onboarding Plans</h1>
@@ -38,5 +40,6 @@ templ Plans(plans []models.Plan) {
 		for _, p := range plans {
 			@PlanGridElem(p)
 		}
+	</div>
 	</div>
 }

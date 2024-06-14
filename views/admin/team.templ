@@ -3,6 +3,9 @@ package admin
 import "smoothstart/views/layout"
 
 templ Team() {
-	@layout.BaseHTML(true)
-	<h1>Admin team page</h1>
+	@layout.BaseHTML()
+	@Header()
+	<div class="container mx-auto">
+		<h1>Your team</h1>
+	</div>
 }

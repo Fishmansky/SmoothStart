@@ -3,6 +3,7 @@ package user
 import "smoothstart/views/layout"
 
 templ Home() {
-	@layout.BaseHTML(false)
+	@layout.BaseHTML()
+	@Header()
 	<h1>User home page</h1>
 }

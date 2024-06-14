@@ -44,7 +44,7 @@ func DBInit() {
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	_, err = DB.Query("CREATE TABLE plans (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT, userid INT NOT NULL, steps JSON NULL, FOREIGN KEY (userid) REFERENCES users(id));")
+	_, err = DB.Query("CREATE TABLE plans (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT, userid INT NULL, steps JSON NULL, FOREIGN KEY (userid) REFERENCES users(id));")
 	if err != nil {
 		slog.Error(err.Error())
 	}
@@ -111,6 +111,8 @@ func main() {
 	// admin routes
 	admin := e.Group("/admin")
 	admin.GET("/home", auth.Validate(aH.HomePage), auth.IsAdmin)
+	admin.GET("/team", auth.Validate(aH.TeamPage), auth.IsAdmin)
+	admin.GET("/plans", auth.Validate(aH.PlansPage), auth.IsAdmin)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
