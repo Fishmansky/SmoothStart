@@ -54,5 +54,10 @@ func (l LoginHandler) HandleLogin(c echo.Context) error {
 	cookie.Value = u.Username
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	c.SetCookie(cookie)
+	if u.IsAdmin {
+		c.Response().Header().Set("HX-Location", "/admin/home")
+	} else {
+		c.Response().Header().Set("HX-Location", "/user/home")
+	}
 	return c.JSON(http.StatusOK, "Login succesfull")
 }
