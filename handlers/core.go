@@ -8,3 +8,7 @@ import (
 func render(c echo.Context, cmp templ.Component) error {
 	return cmp.Render(c.Request().Context(), c.Response())
 }
+
+func isHtmx(c echo.Context) bool {
+	return c.Request().Header.Get("HX-Request") == "true"
+}

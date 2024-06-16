@@ -140,7 +140,7 @@ func (a AdminHandler) PlanPage(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	if c.Request().Header.Get("HX-Request") == "true" {
+	if isHtmx(c) {
 		return render(c, admin.Plan(plan))
 	}
 	return render(c, admin.PlanPage(plan))
