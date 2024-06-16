@@ -7,9 +7,17 @@ import (
 	"smoothstart/views/layout"
 )
 
+type PlanPageViewModel struct {
+	Plans []models.Plan
+}
+
+func NewPlanPageViewModel() *PlanPageViewModel  {
+	return &PlanPageViewModel{}
+}
 
 templ Plan(p models.Plan) {
-	<div>
+	<div class="flex justify-evenly">
+	<div class="flex flex-col w-3/4">
 		<h1>{ p.Name } onboarding plan </h1>
 		<h2 class="pt-4">{ p.Description }</h2>
 		<ul role="list">
@@ -18,28 +26,59 @@ templ Plan(p models.Plan) {
 		}
 		</ul>
 	</div>
-}
-
-templ PlanGridElem(p models.Plan) {
-	<div class="p-4 rounded border-2 border-dark transition-colors hover:bg-yellow cursor-pointer" hx-get={ string(templ.URL(fmt.Sprintf("/plans/%d", p.ID)))} hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">
-		<h3 class="font-medium">{ p.Name }</h3>
-		<h4 class="font-light">{ p.Description }</h4>
+	<div class="flex flex-col w-3/4">
+		<form class="mx-auto">
+		<input type="text" name="name">
+		<input type="text" name="description">
+		</form>
+	</div>
 	</div>
 }
 
-templ Plans(plans []models.Plan) {
+templ PlanGridElem(p models.Plan) {
+	<a class="p-4 rounded border-2 border-dark transition-colors hover:bg-yellow cursor-pointer" href={ templ.URL(fmt.Sprintf("/admin/plans/%d", p.ID)) } hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">
+		<h3 class="font-medium">{ p.Name }</h3>
+		<h4 class="font-light">{ p.Description }</h4>
+	</a>
+}
+
+templ PlansPage(model PlanPageViewModel){
 	@layout.BaseHTML()
 	@Header()
-	<div class="container mx-auto">
+	<div id="app-view" class="container mx-auto">
 	<h1>Plans</h1>
 	<div class="flex justify-start items-center gap-4">
 		<h1>Onboarding Plans</h1>
 		@components.AddButton("/plans")
 	</div>
 	<div class="mt-4 flex grid grid-cols-3 gap-2">
-		for _, p := range plans {
+		for _, p := range model.Plans {
 			@PlanGridElem(p)
 		}
+	</div>
+	</div>
+}
+
+templ PlanPage(p models.Plan){
+	@layout.BaseHTML()
+	@Header()
+	<div id="app-view" class="container mx-auto">
+	<div class="flex justify-evenly">
+	<div class="flex flex-col w-3/4">
+		<h1>{ p.Name } onboarding plan </h1>
+		<h2 class="pt-4">{ p.Description }</h2>
+		<ul role="list">
+		for _, s := range p.Steps {
+			@Step(s.ID, s.Description, s.Done)
+		}
+		</ul>
+	</div>
+	<div class="flex flex-col w-3/4">
+		<form class="mx-auto">
+		<input type="text" name="name">
+		<input type="text" name="description">
+		</form>
+	</div>
 	</div>
 	</div>
 }
