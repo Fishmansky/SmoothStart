@@ -21,8 +21,53 @@ func NewAdminHandler(d *sql.DB) *AdminHandler {
 	}
 }
 
+func (a AdminHandler) getPlans() ([]models.Plan, error) {
+	var plans []models.Plan
+	rows, err := a.db.Query("Select * FROM plans")
+	if err != nil {
+		return plans, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var p models.Plan
+		var s []byte
+		var uId int
+		err := rows.Scan(&p.ID, &p.Name, &p.Description, &uId, &s)
+		if err != nil {
+			return plans, err
+		}
+		var steps []models.Step
+		json.Unmarshal(s, &steps)
+		p.Steps = append(p.Steps, steps...)
+		plans = append(plans, p)
+	}
+	return plans, nil
+
+}
+func (a AdminHandler) getPlan(i string) (models.Plan, error) {
+	var plan models.Plan
+	rows, err := a.db.Query("Select * FROM plans WHERE id = $1", i)
+	if err != nil {
+		slog.Info(err.Error())
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var s []byte
+		var uId int
+		err := rows.Scan(&plan.ID, &plan.Name, &plan.Description, &uId, &s)
+		if err != nil {
+			return plan, err
+		}
+		var steps []models.Step
+		json.Unmarshal(s, &steps)
+		plan.Steps = append(plan.Steps, steps...)
+	}
+	return plan, nil
+}
+
 func (a AdminHandler) HomePage(c echo.Context) error {
-	var data []models.DashboardData
+	var data []admin.DashboardUserData
 	rows, err := a.db.Query("SELECT id, fname, sname FROM users WHERE is_admin = '0'")
 	if err != nil {
 		return c.JSON(http.StatusNoContent, "No teammates found")
@@ -54,11 +99,12 @@ func (a AdminHandler) HomePage(c echo.Context) error {
 		var steps []models.Step
 		json.Unmarshal(s, &steps)
 		p.Steps = append(p.Steps, steps...)
-		data = append(data, models.DashboardData{u, p.CompletionStatus()})
+		data = append(data, admin.DashboardUserData{u, p.CompletionStatus()})
 	}
 
 	return render(c, admin.Home(data))
 }
+
 func (a AdminHandler) TeamPage(c echo.Context) error {
 	var users []models.User
 	rows, err := a.db.Query("SELECT id, fname, sname FROM users WHERE is_admin = '0'")
@@ -78,25 +124,38 @@ func (a AdminHandler) TeamPage(c echo.Context) error {
 	return render(c, admin.Team(users))
 }
 func (a AdminHandler) PlansPage(c echo.Context) error {
-	var plans []models.Plan
-	rows, err := a.db.Query("Select * FROM plans")
+	data := admin.NewPlanPageViewModel()
+	plans, err := a.getPlans()
 	if err != nil {
-		slog.Info(err.Error())
+		slog.Error(err.Error())
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var p models.Plan
-		var s []byte
-		var uId int
-		err := rows.Scan(&p.ID, &p.Name, &p.Description, &uId, &s)
-		if err != nil {
-			slog.Error(err.Error())
-			return c.JSON(http.StatusInternalServerError, "Error scanning plan sql")
-		}
-		var steps []models.Step
-		json.Unmarshal(s, &steps)
-		p.Steps = append(p.Steps, steps...)
-		plans = append(plans, p)
+	data.Plans = plans
+	return render(c, admin.PlansPage(*data))
+}
+
+func (a AdminHandler) PlanPage(c echo.Context) error {
+	id := c.Param("id")
+	plan, err := a.getPlan(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	return render(c, admin.Plans(plans))
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return render(c, admin.Plan(plan))
+	}
+	return render(c, admin.PlanPage(plan))
+}
+
+func (a AdminHandler) MemberPlanPage(c echo.Context) error {
+	id := c.Param("id")
+	plan, err := a.getPlan(id)
+	if err != nil {
+		slog.Error(err.Error())
+		return c.JSON(http.StatusInternalServerError, "Error scanning plan sql")
+	}
+	//if c.Request().Header.Get("HX-Request") != "true" {
+	//	fmt.Println("is not htmx")
+	//	return c.Redirect(http.StatusMovedPermanently, "/admin/plans")
+	//}
+	return render(c, admin.Plan(plan))
 }
