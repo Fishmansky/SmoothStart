@@ -2,11 +2,16 @@ package admin
 
 import (
 		"fmt"
-		"smoothstart/views/layout"
 		"smoothstart/models"
+		"smoothstart/views/layout"
        )
 
-templ Home(data []models.DashboardData) {
+type DashboardUserData struct {
+	models.User
+	Completion int
+}
+
+templ Home(data []DashboardUserData) {
 	@layout.BaseHTML()
 	@Header()
 		<div class="container mx-auto">
