@@ -11,7 +11,7 @@ type Plan struct {
 func (p Plan) CompletionStatus() int {
 	result := 0
 	if len(p.Steps) == 0 {
-		return 1
+		return 0
 	}
 	incr := 100 / len(p.Steps)
 	for _, s := range p.Steps {
