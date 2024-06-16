@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"smoothstart/views/layout"
 	"smoothstart/models"
 )
@@ -8,14 +9,16 @@ import (
 templ Team(users []models.User) {
 	@layout.BaseHTML()
 	@Header()
-	<div class="container mx-auto">
+	<div id="app-view" class="container mx-auto">
 		<h1>Your team</h1>
 		<div class="flex justify-center">
 		<ul class="w-1/2" role="list">
 		for _, u := range users {
-			<li class="py-3 first:pt-0 last:pb-0">
-				<h3 class="px-4 py-4 rounded rounded-md bg-yellow"> { u.Fname } { u.Sname } </h3>
+			<a href={ templ.URL(fmt.Sprintf("/admin/member/%d", u.ID)) } hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">
+				<li class="py-3 first:pt-0 last:pb-0">
+				<h3 class="px-4 py-4 rounded rounded-md bg-yellow" >{ u.Fname } { u.Sname }</h3>
 				</li>
+			</a>
 		}
 		</ul>
 		</div>	

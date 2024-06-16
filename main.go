@@ -32,7 +32,11 @@ func ConnectDB() {
 }
 
 func DBInit() {
-	_, err := DB.Query("DROP TABLE plans;")
+	_, err := DB.Query("DROP TABLE member_plans;")
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	_, err = DB.Query("DROP TABLE plans;")
 	if err != nil {
 		slog.Error(err.Error())
 	}
@@ -44,7 +48,11 @@ func DBInit() {
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	_, err = DB.Query("CREATE TABLE plans (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT, userid INT NULL, steps JSON NULL, FOREIGN KEY (userid) REFERENCES users(id));")
+	_, err = DB.Query("CREATE TABLE plans (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, description TEXT, steps JSON NULL);")
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	_, err = DB.Query("CREATE TABLE member_plans (id SERIAL PRIMARY KEY, user_id INT NOT NULL, plan_id INT NOT NULL, FOREIGN KEY (user_id) REFERENCES users(id), FOREIGN KEY (plan_id) REFERENCES plans(id));")
 	if err != nil {
 		slog.Error(err.Error())
 	}
@@ -58,7 +66,17 @@ func DBInit() {
 	}
 	steps := []models.Step{{ID: 0, Description: "Create account", Done: false}, {ID: 1, Description: "Create password", Done: false}}
 	d, _ := json.Marshal(steps)
-	_, err = DB.Query("INSERT INTO plans (name, description, userid, steps) VALUES ($1, $2, $3, $4);", "user1 plan", "plan for user1", 2, d)
+	_, err = DB.Query("INSERT INTO plans (name, description, steps) VALUES ($1, $2, $3);", "John plan", "plan for John", d)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	steps2 := []models.Step{{ID: 0, Description: "Create account", Done: false}, {ID: 1, Description: "Create password", Done: false}}
+	d2, _ := json.Marshal(steps2)
+	_, err = DB.Query("INSERT INTO plans (name, description, steps) VALUES ($1, $2, $3);", "Test plan", "plan", d2)
+	if err != nil {
+		slog.Error(err.Error())
+	}
+	_, err = DB.Query("INSERT INTO member_plans (plan_id, user_id) VALUES ($1, $2);", 1, 2)
 	if err != nil {
 		slog.Error(err.Error())
 	}

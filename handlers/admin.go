@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"smoothstart/models"
 	"smoothstart/views/admin"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -31,8 +32,7 @@ func (a AdminHandler) getPlans() ([]models.Plan, error) {
 	for rows.Next() {
 		var p models.Plan
 		var s []byte
-		var uId int
-		err := rows.Scan(&p.ID, &p.Name, &p.Description, &uId, &s)
+		err := rows.Scan(&p.ID, &p.Name, &p.Description, &s)
 		if err != nil {
 			return plans, err
 		}
@@ -44,7 +44,7 @@ func (a AdminHandler) getPlans() ([]models.Plan, error) {
 	return plans, nil
 
 }
-func (a AdminHandler) getPlan(i string) (models.Plan, error) {
+func (a AdminHandler) getPlan(i int) (models.Plan, error) {
 	var plan models.Plan
 	rows, err := a.db.Query("Select * FROM plans WHERE id = $1", i)
 	if err != nil {
@@ -54,8 +54,7 @@ func (a AdminHandler) getPlan(i string) (models.Plan, error) {
 
 	for rows.Next() {
 		var s []byte
-		var uId int
-		err := rows.Scan(&plan.ID, &plan.Name, &plan.Description, &uId, &s)
+		err := rows.Scan(&plan.ID, &plan.Name, &plan.Description, &s)
 		if err != nil {
 			return plan, err
 		}
@@ -64,6 +63,16 @@ func (a AdminHandler) getPlan(i string) (models.Plan, error) {
 		plan.Steps = append(plan.Steps, steps...)
 	}
 	return plan, nil
+}
+
+func (a AdminHandler) getMemberPlan(i int) (models.Plan, error) {
+	var plan models.Plan
+	var planID int
+	if err := a.db.QueryRow("Select plan_ID FROM member_plans WHERE user_id = $1", i).Scan(&planID); err != nil {
+		return plan, err
+	}
+	plan, err := a.getPlan(planID)
+	return plan, err
 }
 
 func (a AdminHandler) HomePage(c echo.Context) error {
@@ -80,26 +89,11 @@ func (a AdminHandler) HomePage(c echo.Context) error {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, "Error scanning user sql")
 		}
-		planRows, err := a.db.Query("SELECT id, name, steps FROM plans WHERE userid = $1", u.ID)
+		up, err := a.getMemberPlan(u.ID)
 		if err != nil {
-			return c.JSON(http.StatusNoContent, "No plans found")
+			return c.JSON(http.StatusInternalServerError, "Error scanning user sql")
 		}
-		defer planRows.Close()
-
-		var p models.Plan
-		var s []byte
-		for planRows.Next() {
-			err := planRows.Scan(&p.ID, &p.Name, &s)
-			if err != nil {
-				slog.Error(err.Error())
-				return c.JSON(http.StatusInternalServerError, "Error scanning plan sql")
-			}
-
-		}
-		var steps []models.Step
-		json.Unmarshal(s, &steps)
-		p.Steps = append(p.Steps, steps...)
-		data = append(data, admin.DashboardUserData{u, p.CompletionStatus()})
+		data = append(data, admin.DashboardUserData{u, up.CompletionStatus()})
 	}
 
 	return render(c, admin.Home(data))
@@ -136,7 +130,11 @@ func (a AdminHandler) PlansPage(c echo.Context) error {
 
 func (a AdminHandler) PlanPage(c echo.Context) error {
 	id := c.Param("id")
-	plan, err := a.getPlan(id)
+	i, err := strconv.Atoi(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	plan, err := a.getPlan(i)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -148,7 +146,11 @@ func (a AdminHandler) PlanPage(c echo.Context) error {
 
 func (a AdminHandler) MemberPlanPage(c echo.Context) error {
 	id := c.Param("id")
-	plan, err := a.getPlan(id)
+	i, err := strconv.Atoi(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	plan, err := a.getPlan(i)
 	if err != nil {
 		slog.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, "Error scanning plan sql")
