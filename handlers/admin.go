@@ -24,7 +24,7 @@ func NewAdminHandler(d *sql.DB) *AdminHandler {
 
 func (a AdminHandler) getPlans() ([]models.Plan, error) {
 	var plans []models.Plan
-	rows, err := a.db.Query("Select * FROM plans")
+	rows, err := a.db.Query("Select * FROM plan_templates")
 	if err != nil {
 		return plans, err
 	}
@@ -46,7 +46,7 @@ func (a AdminHandler) getPlans() ([]models.Plan, error) {
 }
 func (a AdminHandler) getPlan(i int) (models.Plan, error) {
 	var plan models.Plan
-	rows, err := a.db.Query("Select * FROM plans WHERE id = $1", i)
+	rows, err := a.db.Query("Select * FROM plan_templates WHERE id = $1", i)
 	if err != nil {
 		slog.Info(err.Error())
 	}
@@ -65,14 +65,17 @@ func (a AdminHandler) getPlan(i int) (models.Plan, error) {
 	return plan, nil
 }
 
-func (a AdminHandler) getMemberPlan(i int) (models.Plan, error) {
+func (a AdminHandler) getMemberPlan(id int) (models.Plan, error) {
 	var plan models.Plan
-	var planID int
-	if err := a.db.QueryRow("Select plan_ID FROM member_plans WHERE user_id = $1", i).Scan(&planID); err != nil {
+	var s []byte
+	if err := a.db.QueryRow("Select id, name, description, steps FROM plans WHERE user_id = $1", id).Scan(&plan.ID, &plan.Name, &plan.Description, &s); err != nil {
+		slog.Warn(err.Error())
 		return plan, err
 	}
-	plan, err := a.getPlan(planID)
-	return plan, err
+	var steps []models.Step
+	json.Unmarshal(s, &steps)
+	plan.Steps = append(plan.Steps, steps...)
+	return plan, nil
 }
 
 func (a AdminHandler) HomePage(c echo.Context) error {
@@ -150,14 +153,17 @@ func (a AdminHandler) MemberPlanPage(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	plan, err := a.getPlan(i)
+	plan, err := a.getMemberPlan(i)
 	if err != nil {
 		slog.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, "Error scanning plan sql")
+	}
+	if isHtmx(c) {
+		return render(c, admin.Plan(plan))
 	}
 	//if c.Request().Header.Get("HX-Request") != "true" {
 	//	fmt.Println("is not htmx")
 	//	return c.Redirect(http.StatusMovedPermanently, "/admin/plans")
 	//}
-	return render(c, admin.Plan(plan))
+	return render(c, admin.PlanPage(plan))
 }
