@@ -1,0 +1,31 @@
+package admin
+
+import (
+		"fmt"
+		"smoothstart/models"
+		"smoothstart/views/layout"
+       )
+
+type DashboardUserData struct {
+	models.User
+	Completion int
+}
+
+templ Home(data []DashboardUserData) {
+	@layout.BaseHTML()
+	@Header()
+		<div id="app-view" class="container mx-auto">
+		<h1 class="mx-auto">Admin dashboard</h1>
+		<div class="flex justify-center">
+		<ul class="w-1/2" role="list">
+		for _, d := range data {
+			<a href={ templ.URL(fmt.Sprintf("/admin/plans/member/%d", d.ID)) } hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">
+				<li class="py-3 first:pt-0 last:pb-0">
+				<h3 class="px-4 py-4 rounded rounded-md bg-yellow"> { d.Fname } { d.Sname } - Plan completion: { fmt.Sprintf("%d",d.Completion) }% </h3>
+				</li>
+			</a>
+		}
+		</ul>
+		</div>
+		</div>
+}

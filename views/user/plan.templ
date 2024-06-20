@@ -1,0 +1,24 @@
+package user
+
+import (
+	"smoothstart/models"
+	"smoothstart/views/layout"
+)
+
+templ Plan(p models.Plan) {
+	<div class="flex justify-start items-center gap-4">
+		<h1>My Onboarding plan</h1>
+	</div>
+	<ul role="list">
+	for _, s := range p.Steps {
+		@Step(s.ID, s.Description, s.Done)
+	}
+	</ul>
+}
+templ PlanPage(p models.Plan){
+	@layout.BaseHTML()
+	@Header()
+	<div id="app-view" class="container mx-auto">
+		@Plan(p)
+	</div>
+}
