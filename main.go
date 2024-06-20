@@ -129,6 +129,7 @@ func main() {
 	admin.GET("/plans", auth.Validate(aH.PlansPage), auth.IsAdmin)
 	admin.GET("/plans/:id", auth.Validate(aH.PlanPage), auth.IsAdmin)
 	admin.GET("/plans/member/:id", auth.Validate(aH.MemberPlanPage), auth.IsAdmin)
+	admin.PUT("/plans/member/:id", auth.Validate(aH.MemberPlanStepStatusUpdate), auth.IsAdmin)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

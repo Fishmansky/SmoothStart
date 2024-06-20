@@ -78,6 +78,37 @@ func (a AdminHandler) getMemberPlan(id int) (models.Plan, error) {
 	return plan, nil
 }
 
+func (a AdminHandler) UpdateStepStatus(planId int, stepId int) error {
+	var steps []models.Step
+	var s []byte
+	if err := a.db.QueryRow("Select steps FROM plans WHERE id = $1", planId).Scan(&s); err != nil {
+		return err
+	}
+	json.Unmarshal(s, &steps)
+	if steps[stepId].Done {
+		steps[stepId].Done = false
+		updatedSteps, err := json.Marshal(&steps)
+		if err != nil {
+			return err
+		}
+		_, err = a.db.Exec("UPDATE plans SET steps = $1 WHERE id = $2", updatedSteps, planId)
+		if err != nil {
+			return err
+		}
+	} else {
+		steps[stepId].Done = true
+		updatedSteps, err := json.Marshal(&steps)
+		if err != nil {
+			return err
+		}
+		_, err = a.db.Exec("UPDATE plans SET steps = $1 WHERE id = $2", updatedSteps, planId)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (a AdminHandler) HomePage(c echo.Context) error {
 	var data []admin.DashboardUserData
 	rows, err := a.db.Query("SELECT id, fname, sname FROM users WHERE is_admin = '0'")
@@ -166,4 +197,22 @@ func (a AdminHandler) MemberPlanPage(c echo.Context) error {
 	//	return c.Redirect(http.StatusMovedPermanently, "/admin/plans")
 	//}
 	return render(c, admin.PlanPage(plan))
+}
+
+func (a AdminHandler) MemberPlanStepStatusUpdate(c echo.Context) error {
+	id := c.Param("id")
+	sId := c.QueryParam("step")
+	planId, err := strconv.Atoi(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	stepId, err := strconv.Atoi(sId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	err = a.UpdateStepStatus(planId, stepId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, "Status updated")
 }

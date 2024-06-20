@@ -22,7 +22,7 @@ templ Plan(p models.Plan) {
 		<h2 class="pt-4">{ p.Description }</h2>
 		<ul role="list">
 		for _, s := range p.Steps {
-			@Step(s.ID, s.Description, s.Done)
+			@Step(s.ID, p.ID, s.Description, s.Done)
 		}
 		</ul>
 	</div>
@@ -69,7 +69,7 @@ templ PlanPage(p models.Plan){
 		<h2 class="pt-4">{ p.Description }</h2>
 		<ul role="list">
 		for _, s := range p.Steps {
-			@Step(s.ID, s.Description, s.Done)
+			@Step(s.ID, p.ID, s.Description, s.Done)
 		}
 		</ul>
 	</div>

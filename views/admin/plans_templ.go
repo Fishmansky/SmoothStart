@@ -69,7 +69,7 @@ func Plan(p models.Plan) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for _, s := range p.Steps {
-			templ_7745c5c3_Err = Step(s.ID, s.Description, s.Done).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = Step(s.ID, p.ID, s.Description, s.Done).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -246,7 +246,7 @@ func PlanPage(p models.Plan) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		for _, s := range p.Steps {
-			templ_7745c5c3_Err = Step(s.ID, s.Description, s.Done).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = Step(s.ID, p.ID, s.Description, s.Done).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
