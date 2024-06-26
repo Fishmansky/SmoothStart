@@ -115,6 +115,7 @@ func main() {
 	// index login page
 	e.GET("/", lH.HandleLoginPage)
 	e.POST("/login", lH.HandleLogin)
+	e.POST("/validate", lH.Validate)
 
 	// user routes
 	user := e.Group("/user")
