@@ -6,6 +6,6 @@ Built with Go, Echo, HTMX, Templ and Postgresql.
 
 # Functionalities
 
-- Setup custom onbording paths for each role
+- Setup custom onbording plan for each role
 - Manage and control the onboarding process of each new team member
 - Setup custom notifications
