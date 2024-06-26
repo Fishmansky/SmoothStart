@@ -74,7 +74,7 @@ func Step(id int, descr string, b bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"inline-flex items-center justify-between w-1/2 p-5 text-dark bg-gray border-2 border-dark rounded-lg cursor-pointer peer-checked:border-green peer-checked:bg-yellow\"><div class=\"block\"><div class=\"w-full text-lg font-semibold\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"inline-flex items-center justify-between w-1/2 p-5 text-dark bg-gray border-2 border-dark rounded-lg cursor-pointer peer-checked:border-green peer-checked:bg-yellow peer-checked:opacity-50 transition duration-150 ease-in-out\"><div class=\"block\"><div class=\"w-full text-lg font-semibold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
