@@ -93,9 +93,6 @@ func (u UserHandler) PlanPage(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	if isHtmx(c) {
-		return render(c, user.Plan(p))
-	}
 	return render(c, user.PlanPage(p))
 }
 
