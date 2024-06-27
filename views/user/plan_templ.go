@@ -28,7 +28,7 @@ func Plan(p models.Plan) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex justify-start items-center gap-4\"><h1>My Onboarding plan</h1></div><ul role=\"list\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex flex-col p-4 mx-auto w-1/2 items-center gap-4 bg-engviolet border-2 border-dark shadow-lg\"><h1 class=\"py-4 text-napyellow text-[38px]\">My Onboarding plan</h1><ul role=\"list\" class=\"w-3/4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -38,7 +38,7 @@ func Plan(p models.Plan) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ul>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ul></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
