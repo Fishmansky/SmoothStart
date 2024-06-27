@@ -2,6 +2,7 @@
 module.exports = {
   content: [
 	'./views/**/*.templ',
+	'./views/**/*.go',
   ],
   theme: {
     screens: {
@@ -16,6 +17,12 @@ module.exports = {
 	    'green': '#297373',
 	    'yellow': '#bdd358',
 	    'violet': '#564256',
+	    'purple': '#c084fc',
+	    'smoky': '#0f1108',
+	    'lavender': '#c084fc',
+	    'engviolet': '#49416d',
+	    'coral': '#e08d79',
+	    'napyellow':'#efcb68',
     },
     fontFamily: {
 	    sans: ['Nunito Sans', 'sans-serif'],
