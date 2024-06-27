@@ -25,7 +25,7 @@ func NewLoginHandler(d *sql.DB) *LoginHandler {
 
 func (l LoginHandler) getUser(username string, password string) (*models.User, error) {
 	var user models.User
-	if err := l.db.QueryRow("SELECT id, username, fname, sname is_admin FROM users WHERE username = $1 AND password = $2", username, password).Scan(&user); err != nil {
+	if err := l.db.QueryRow("SELECT id, username, fname, sname, is_admin FROM users WHERE username = $1 AND password = $2", username, password).Scan(&user.ID, &user.Username, &user.Fname, &user.Sname, &user.IsAdmin); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("%s\n", "User not found")
 		}
