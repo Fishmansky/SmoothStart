@@ -5,7 +5,7 @@ import "fmt"
 templ Step(stepId int, planId int, descr string, b bool) {
 <li class="py-3 first:pt-0 last:pb-0" >
 	<input type="checkbox" id={ fmt.Sprintf("%d-%s",stepId,"step-option") } value="" class="hidden peer" required="" if b { checked } hx-put={ fmt.Sprintf("/admin/plans/member/%d?step=%d", planId, stepId) }>
-        <label for={ fmt.Sprintf("%d-%s",stepId,"step-option") } class="inline-flex items-center justify-between w-1/2 p-5 text-dark bg-gray border-2 border-dark rounded-lg cursor-pointer peer-checked:border-green peer-checked:bg-yellow">                           
+        <label for={ fmt.Sprintf("%d-%s",stepId,"step-option") } class="inline-flex items-center justify-between p-5 text-dark bg-mywhite border-2 border-yellow rounded-lg cursor-pointer peer-checked:border-green peer-checked:bg-yellow">                           
     	<div class="block">
                	<div class="w-full text-lg font-semibold"> { fmt.Sprintf("%d",stepId) } - { descr } </div>
        	</div>
