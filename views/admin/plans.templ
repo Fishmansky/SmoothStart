@@ -17,8 +17,8 @@ func NewPlanPageViewModel() *PlanPageViewModel  {
 
 templ Plan(p models.Plan) {
 	<div class="flex flex-col border rounded border-green border-2 bg-dark items-center">
-		<h1 class="text-mywhite">{ p.Name } onboarding plan </h1>
-		<h2 class="pt-4 text-mywhite">{ p.Description }</h2>
+		<h1 class="text-mywhite">{ p.Name }</h1>
+		<h2 class="py-4 text-mywhite">{ p.Description }</h2>
 		<ul role="list">
 		for _, s := range p.Steps {
 			@Step(s.ID, p.ID, s.Description, s.Done)

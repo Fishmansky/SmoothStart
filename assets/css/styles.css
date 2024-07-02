@@ -619,11 +619,6 @@ h4 {
   margin-right: auto;
 }
 
-.mx-12 {
-  margin-left: 3rem;
-  margin-right: 3rem;
-}
-
 .mt-4 {
   margin-top: 1rem;
 }
@@ -770,14 +765,19 @@ h4 {
   border-color: rgb(41 115 115 / var(--tw-border-opacity));
 }
 
+.border-smoky {
+  --tw-border-opacity: 1;
+  border-color: rgb(15 17 8 / var(--tw-border-opacity));
+}
+
 .border-yellow {
   --tw-border-opacity: 1;
   border-color: rgb(189 211 88 / var(--tw-border-opacity));
 }
 
-.border-smoky {
-  --tw-border-opacity: 1;
-  border-color: rgb(15 17 8 / var(--tw-border-opacity));
+.bg-coral {
+  --tw-bg-opacity: 1;
+  background-color: rgb(224 141 121 / var(--tw-bg-opacity));
 }
 
 .bg-dark {
@@ -800,19 +800,9 @@ h4 {
   background-color: rgb(235 242 250 / var(--tw-bg-opacity));
 }
 
-.bg-purple {
-  --tw-bg-opacity: 1;
-  background-color: rgb(192 132 252 / var(--tw-bg-opacity));
-}
-
 .bg-yellow {
   --tw-bg-opacity: 1;
   background-color: rgb(189 211 88 / var(--tw-bg-opacity));
-}
-
-.bg-coral {
-  --tw-bg-opacity: 1;
-  background-color: rgb(224 141 121 / var(--tw-bg-opacity));
 }
 
 .p-2 {
@@ -861,6 +851,10 @@ h4 {
   line-height: 2rem;
 }
 
+.text-\[38px\] {
+  font-size: 38px;
+}
+
 .text-lg {
   font-size: 1.125rem;
   line-height: 1.75rem;
@@ -869,10 +863,6 @@ h4 {
 .text-xl {
   font-size: 1.25rem;
   line-height: 1.75rem;
-}
-
-.text-\[38px\] {
-  font-size: 38px;
 }
 
 .font-light {
@@ -897,14 +887,14 @@ h4 {
   color: rgb(235 242 250 / var(--tw-text-opacity));
 }
 
-.text-yellow {
-  --tw-text-opacity: 1;
-  color: rgb(189 211 88 / var(--tw-text-opacity));
-}
-
 .text-napyellow {
   --tw-text-opacity: 1;
   color: rgb(239 203 104 / var(--tw-text-opacity));
+}
+
+.text-yellow {
+  --tw-text-opacity: 1;
+  color: rgb(189 211 88 / var(--tw-text-opacity));
 }
 
 .shadow-lg {
@@ -970,14 +960,14 @@ h4 {
   border-color: rgb(15 17 8 / var(--tw-border-opacity));
 }
 
-.peer:checked ~ .peer-checked\:bg-yellow {
-  --tw-bg-opacity: 1;
-  background-color: rgb(189 211 88 / var(--tw-bg-opacity));
-}
-
 .peer:checked ~ .peer-checked\:bg-coral {
   --tw-bg-opacity: 1;
   background-color: rgb(224 141 121 / var(--tw-bg-opacity));
+}
+
+.peer:checked ~ .peer-checked\:bg-yellow {
+  --tw-bg-opacity: 1;
+  background-color: rgb(189 211 88 / var(--tw-bg-opacity));
 }
 
 .peer:checked ~ .peer-checked\:opacity-50 {
