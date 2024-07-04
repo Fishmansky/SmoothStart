@@ -3,6 +3,7 @@ package server
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -27,32 +28,40 @@ func LoadEnvs() {
 	}
 }
 
-func (s *SmoothStartServer) ConnectDB(psqlDSN string) {
+func (s *SmoothStartServer) ConnectDB() {
+	host := os.Getenv("POSTGRES_HOST")
+	user := os.Getenv("POSTGRES_USER")
+	db := os.Getenv("POSTGRES_DB")
+	pass := os.Getenv("POSTGRES_PASSWORD")
 	var err error
-	s.DB, err = sql.Open("postgres", psqlDSN)
+	connStr := fmt.Sprintf("postgresql://%s:%s@%s/%s?sslmode=disable", user, pass, host, db)
+	s.DB, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (s *SmoothStartServer) ConnectRedis(redisConf string) {
-	ops, err := redis.ParseURL(redisConf)
-	if err != nil {
-		log.Fatal(err)
+func (s *SmoothStartServer) ConnectRedis() {
+	host := os.Getenv("REDIS_HOST")
+	port := os.Getenv("REDIS_PORT")
+	ops := &redis.Options{
+		Addr:     host + ":" + port,
+		Password: "",
+		DB:       0,
 	}
 	s.Redis = redis.NewClient(ops)
 }
 
 func (s *SmoothStartServer) DBInit() {
-	_, err := s.DB.Query("DROP TABLE plan_templates;")
+	_, err := s.DB.Query("DROP TABLE IF EXISTS plan_templates;")
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	_, err = s.DB.Query("DROP TABLE plans;")
+	_, err = s.DB.Query("DROP TABLE IF EXISTS plans;")
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	_, err = s.DB.Query("DROP TABLE users;")
+	_, err = s.DB.Query("DROP TABLE IF EXISTS users;")
 	if err != nil {
 		slog.Error(err.Error())
 	}
@@ -93,11 +102,9 @@ func NewSSS() *SmoothStartServer {
 	s := &SmoothStartServer{
 		Server: echo.New(),
 	}
-	LoadEnvs()
-	psqlDSN := os.Getenv("PSQL_DSN")
-	redisConf := os.Getenv("REDIS_CONF")
-	s.ConnectDB(psqlDSN)
-	s.ConnectRedis(redisConf)
+	//LoadEnvs()
+	s.ConnectDB()
+	s.ConnectRedis()
 	s.DBInit()
 	s.Routes()
 	return s
