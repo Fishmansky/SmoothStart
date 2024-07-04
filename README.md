@@ -2,7 +2,7 @@
 
 Free onboarding platform for your team!
 
-Built with Go, Echo, HTMX, Templ and Postgresql.
+Built with Go, Echo, HTMX, Templ, PostgreSQL, Redis and Docker.
 
 # Functionalities
 
