@@ -10,16 +10,19 @@ import (
 	"smoothstart/views/layout"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 )
 
 type LoginHandler struct {
-	db *sql.DB
+	db    *sql.DB
+	redis *redis.Client
 }
 
-func NewLoginHandler(d *sql.DB) *LoginHandler {
+func NewLoginHandler(d *sql.DB, r *redis.Client) *LoginHandler {
 	return &LoginHandler{
-		db: d,
+		db:    d,
+		redis: r,
 	}
 }
 
@@ -61,6 +64,10 @@ func (l LoginHandler) Validate(c echo.Context) error {
 	}
 	return nil
 }
+func (l LoginHandler) HandleLogout(c echo.Context) error {
+	return c.JSON(http.StatusOK, "Logout succesfull")
+}
+
 func (l LoginHandler) HandleLogin(c echo.Context) error {
 	var input models.LoginData
 	if err := c.Bind(&input); err != nil {
