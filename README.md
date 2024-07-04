@@ -16,11 +16,19 @@ Built with Go, Echo, HTMX, Templ, PostgreSQL, Redis and Docker.
 ```bash
 git clone git@github.com:Fishmansky/SmoothStart.git
 ```
-2. Build it
+
+2. Copy env_example to .env
+```bash
+cp env_example .env
+```
+and set variables inside it.
+
+3. Build it
 ```bash
 make build
 ```
-3. Run it
+
+4. Run it
 ```bash
 make run
 ```
