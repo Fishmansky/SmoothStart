@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -37,7 +38,7 @@ func (s *SmoothStartServer) ConnectDB() {
 	connStr := fmt.Sprintf("postgresql://%s:%s@%s/%s?sslmode=disable", user, pass, host, db)
 	s.DB, err = sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
@@ -50,6 +51,10 @@ func (s *SmoothStartServer) ConnectRedis() {
 		DB:       0,
 	}
 	s.Redis = redis.NewClient(ops)
+	ctx := context.Background()
+	if err := s.Redis.Ping(ctx).Err(); err != nil {
+		log.Println(err)
+	}
 }
 
 func (s *SmoothStartServer) DBInit() {
@@ -102,7 +107,7 @@ func NewSSS() *SmoothStartServer {
 	s := &SmoothStartServer{
 		Server: echo.New(),
 	}
-	//LoadEnvs()
+	LoadEnvs()
 	s.ConnectDB()
 	s.ConnectRedis()
 	s.DBInit()

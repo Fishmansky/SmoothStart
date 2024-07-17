@@ -7,6 +7,7 @@ import (
 	"smoothstart/auth"
 	"smoothstart/handlers"
 
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -37,18 +38,22 @@ func (s *SmoothStartServer) Routes() {
 	// handlers
 	userHandler := handlers.NewUserHandler(s.DB)
 	adminHandler := handlers.NewAdminHandler(s.DB)
-	loginHandler := handlers.NewLoginHandler(s.DB, s.Redis)
-	auth := auth.NewAuthHandler(s.DB, s.Redis)
+	loginHandler := handlers.NewLoginHandler(s.DB, s.Redis, os.Getenv("SECRET_KEY"))
+	auth := auth.NewAuthHandler(s.DB, s.Redis, os.Getenv("SECRET_KEY"))
 
 	s.Server.Static("/", "assets")
 
 	// index login page
 	s.Server.GET("/", loginHandler.HandleLoginPage)
 	s.Server.POST("/login", loginHandler.HandleLogin)
-	s.Server.POST("/validate", loginHandler.Validate)
+	s.Server.GET("/validate", auth.Validate(loginHandler.Validate))
 
 	// user routes
 	user := s.Server.Group("/user")
+	user.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey:  []byte(os.Getenv("SECRET_KEY")),
+		TokenLookup: "cookie:jwt",
+	}))
 	user.GET("/home", auth.Validate(userHandler.HomePage), auth.IsUser)
 	user.GET("/plan", auth.Validate(userHandler.PlanPage), auth.IsUser)
 	user.PUT("/plan", auth.Validate(userHandler.HandleUpdateStepStatus), auth.IsUser)
@@ -56,6 +61,10 @@ func (s *SmoothStartServer) Routes() {
 
 	// admin routes
 	admin := s.Server.Group("/admin")
+	admin.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey:  []byte(os.Getenv("SECRET_KEY")),
+		TokenLookup: "cookie:jwt",
+	}))
 	admin.GET("/home", auth.Validate(adminHandler.HomePage), auth.IsAdmin)
 	admin.GET("/team", auth.Validate(adminHandler.TeamPage), auth.IsAdmin)
 	admin.GET("/plans", auth.Validate(adminHandler.PlansPage), auth.IsAdmin)
