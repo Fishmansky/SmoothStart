@@ -147,7 +147,14 @@ func (a AdminHandler) TeamPage(c echo.Context) error {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, "Error scanning user sql")
 		}
-		users = append(users, u)
+		_, err = a.getMemberPlan(u.ID)
+		if err != nil {
+			u.HasPlan = false
+			users = append(users, u)
+		} else {
+			u.HasPlan = true
+			users = append(users, u)
+		}
 	}
 	return render(c, admin.Team(users))
 }
