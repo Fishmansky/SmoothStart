@@ -12,6 +12,7 @@ type User struct {
 	Sname    string `json:"sname"`
 	Password string `json:"password"`
 	IsAdmin  bool   `json:"is_admin"`
+	HasPlan  bool
 }
 
 func FindUser(db *sql.DB, data LoginData) (User, error) {
