@@ -1,7 +1,12 @@
 package components
 
 templ AddButton(target string) {
-	<div class="w-8 h-8 rounded-xl border-2 border-dark transition-colors hover:bg-yellow flex justify-center items-center cursor-pointer" hx-post={ target }>
-		<span class="text-dark text-2xl">+</span>
+	<a href={ templ.URL(target) }>
+	<div class="w-48 h-48 rounded-xl bg-blue flex justify-center items-center cursor-pointer group">
+		<div class="relative w-42 h-42 p-16 bg-blue">
+    		<div class="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-8 bg-mint group-hover:animate-pulse"></div>
+    		<div class="absolute inset-x-0 top-1/2 transform -translate-y-1/2 h-8 bg-mint group-hover:animate-pulse"></div>
+		</div>
 	</div>
+	</a>
 }
