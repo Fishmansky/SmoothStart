@@ -8,6 +8,7 @@ import (
 	"smoothstart/models"
 	"smoothstart/views/admin"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -78,6 +79,25 @@ func (a AdminHandler) getMemberPlan(id int) (models.Plan, error) {
 	return plan, nil
 }
 
+func (a AdminHandler) UpdateTemplateStep(planId int, stepId int, desc string) error {
+	var steps []models.Step
+	var s []byte
+	if err := a.db.QueryRow("Select steps FROM plan_templates WHERE id = $1", planId).Scan(&s); err != nil {
+		return err
+	}
+	json.Unmarshal(s, &steps)
+	steps[stepId].Description = desc
+	updatedSteps, err := json.Marshal(&steps)
+	if err != nil {
+		return err
+	}
+	_, err = a.db.Exec("UPDATE plan_templates SET steps = $1 WHERE id = $2", updatedSteps, planId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (a AdminHandler) UpdateStepStatus(planId int, stepId int) error {
 	var steps []models.Step
 	var s []byte
@@ -107,6 +127,29 @@ func (a AdminHandler) UpdateStepStatus(planId int, stepId int) error {
 		}
 	}
 	return nil
+}
+func (a AdminHandler) AddStepToPlan(id int, step string) (int, error) {
+	var steps []models.Step
+	var s []byte
+	if err := a.db.QueryRow("Select steps FROM plan_templates WHERE id = $1", id).Scan(&s); err != nil {
+		return -1, err
+	}
+	json.Unmarshal(s, &steps)
+	last := steps[len(steps)-1].ID + 1
+	steps = append(steps, models.Step{
+		ID:          last,
+		Description: step,
+		Done:        false,
+	})
+	updatedSteps, err := json.Marshal(&steps)
+	if err != nil {
+		return -1, err
+	}
+	_, err = a.db.Exec("UPDATE plan_templates SET steps = $1 WHERE id = $2", updatedSteps, id)
+	if err != nil {
+		return -1, err
+	}
+	return last, nil
 }
 
 func (a AdminHandler) HomePage(c echo.Context) error {
@@ -222,4 +265,57 @@ func (a AdminHandler) MemberPlanStepStatusUpdate(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, "Status updated")
+}
+
+func (a AdminHandler) AddStep(c echo.Context) error {
+	desc := c.FormValue("description")
+	cur := c.Request().Header.Get("HX-Current-URL")
+	if cur == "" {
+		return c.JSON(http.StatusBadRequest, "Bad request")
+	}
+	parts := strings.Split(cur, "/")
+	i := parts[len(parts)-1]
+	pid, err := strconv.Atoi(i)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	sid, err := a.AddStepToPlan(pid, desc)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return render(c, admin.TemplateStep(sid, pid, desc))
+}
+
+func (a AdminHandler) GetEditStep(c echo.Context) error {
+	desc := c.FormValue("description")
+	p := c.FormValue("plan")
+	pid, err := strconv.Atoi(p)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	s := c.FormValue("step")
+	sid, err := strconv.Atoi(s)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return render(c, admin.TemplateStepEdit(sid, pid, desc))
+}
+
+func (a AdminHandler) EditStep(c echo.Context) error {
+	desc := c.FormValue("description")
+	p := c.FormValue("plan")
+	pid, err := strconv.Atoi(p)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	s := c.FormValue("step")
+	sid, err := strconv.Atoi(s)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	err = a.UpdateTemplateStep(pid, sid, desc)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return render(c, admin.TemplateStep(sid, pid, desc))
 }
