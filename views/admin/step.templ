@@ -2,24 +2,38 @@ package admin
 
 import "fmt"
 
-templ Step_old(stepId int, planId int, descr string, b bool) {
-<li class="py-3 first:pt-0 last:pb-0" >
-	<input type="checkbox" id={ fmt.Sprintf("%d-%s",stepId,"step-option") } value="" class="hidden peer" required="" if b { checked } hx-put={ fmt.Sprintf("/admin/plans/member/%d?step=%d", planId, stepId) }>
-        <label for={ fmt.Sprintf("%d-%s",stepId,"step-option") } class="inline-flex items-center justify-between p-5 text-dark bg-mywhite border-2 border-yellow rounded-lg cursor-pointer peer-checked:border-green peer-checked:bg-yellow">                           
-    	<div class="block">
-               	<div class="w-full text-lg font-semibold"> { fmt.Sprintf("%d",stepId) } - { descr } </div>
-       	</div>
-       	</label>
-</li>
+templ TemplateStep(stepId int, planId int, descr string) {
+	<div id={ fmt.Sprintf("step-%d",stepId) } class="group"> 
+		<form class="p-2 flex space-x-1 bg-cream text-center w-3/4 mx-auto text-dark text-xl">
+		<p class="grow transition-transform">{ descr }</p>
+		<input type="hidden" name="description" value={ descr }>
+		<input type="hidden" name="plan" value={ fmt.Sprintf("%d",planId)}>
+		<input type="hidden" name="step" value={ fmt.Sprintf("%d",stepId) }>
+		<button class="hidden group-hover:inline text-blue transition-transform" hx-post="/admin/plans/editstep" hx-include="[name='plan'], [name='step']" hx-target={ fmt.Sprintf("#step-%d",stepId) } hx-swap="outerHTML">Edit</button>
+		</form>
+	</div>
 }
 
-templ Step(stepId int, planId int, descr string, b bool) {
-<li class="py-3 first:pt-0 last:pb-0" >
-	<input type="checkbox" id={ fmt.Sprintf("%d-%s",stepId,"step-option") } value="" class="hidden peer" required="" if b { checked } hx-put={ fmt.Sprintf("/admin/plans/member/%d?step=%d", planId, stepId) }>
-        <label for={ fmt.Sprintf("%d-%s",stepId,"step-option") } class="inline-flex items-center justify-between p-5 text-dark bg-mywhite border-2 border-yellow rounded-lg cursor-pointer peer-checked:border-green peer-checked:bg-yellow">                           
-    	<div class="block">
-               	<div class="w-full text-lg font-semibold"> { fmt.Sprintf("%d",stepId) } - { descr } </div>
-       	</div>
-       	</label>
-</li>
+templ TemplateStepEdit(stepId int, planId int, descr string) {
+	<div id={ fmt.Sprintf("step-%d",stepId) } class="p-2 bg-cream text-center w-3/4 mx-auto text-dark text-xl"> 
+		<form>
+		<input type="text" name="description" class="bg-mint text-white text-xl text-center" value={ descr } required>
+		<input type="hidden" name="plan" value={ fmt.Sprintf("%d",planId)}>
+		<input type="hidden" name="step" value={ fmt.Sprintf("%d",stepId) }>
+		<button type="submit" class="px-2 bg-green text-dark text-center text-xl" type="submit" hx-put="/admin/plans/editstep" hx-target={ fmt.Sprintf("#step-%d",stepId) } hx-swap="outerHTML">
+		Modify
+		</button>
+		</form>
+	</div>
+}
+
+templ AddTemplateStep() {
+	<div class="p-2 w-3/4 mx-auto bg-cream"> 
+		<form class="flex justify-between" hx-on::after-request=" if(event.detail.successful) this.reset()">
+		<input type="text" name="description" class="bg-mint text-white text-xl text-center" required>
+		<button type="submit" class="px-2 bg-green text-dark text-center text-xl" type="submit" hx-put="/admin/plans/addstep" hx-target="#steps" hx-swap="beforeend">
+		Add
+		</button>
+		</form>
+	</div>
 }

@@ -47,7 +47,7 @@ func Plan(p models.Plan) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" method=\"PUT\" hx-disabled-elt=\"input[type=&#39;text&#39;], input[type=&#39;password&#39;], button\"><label for=\"planname\" class=\"mx-auto font-medium text-xl text-light\">Plan name</label> <input type=\"text\" id=\"planname\" name=\"name\" required class=\"bg-mint h-8 text-light text-center text-xl\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" method=\"PUT\" hx-disabled-elt=\"input[type=&#39;text&#39;], input[type=&#39;password&#39;], button\"><label for=\"planname\" class=\"mx-auto font-medium text-xl text-light\">Plan name</label> <input type=\"text\" id=\"planname\" name=\"name\" required class=\"bg-cream h-8 text-dark text-center text-xl\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -60,7 +60,7 @@ func Plan(p models.Plan) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <label for=\"plandesc\" class=\"mx-auto font-medium text-xl text-light\">Plan description</label> <input type=\"text\" id=\"plandesc\" name=\"desc\" required class=\"bg-mint h-8 text-light text-center text-xl\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <label for=\"plandesc\" class=\"mx-auto font-medium text-xl text-light\">Plan description</label> <input type=\"text\" id=\"plandesc\" name=\"desc\" required class=\"bg-cream h-8 text-dark text-center text-xl\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -73,17 +73,25 @@ func Plan(p models.Plan) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"flex justify-between\"><a href=\"/admin/plans\"><div class=\"p-2 bg-red text-center text-dark text-xl\">Cancel</div></a> <button type=\"submit\"><div class=\"p-2 bg-green text-center text-dark text-xl\">Modify</div></button></div></form><div class=\"flex flex-col mx-auto w-1/3 space-y-2 bg-blue\"><h1 class=\"mx-auto text-cream p-2 text-xl\">Plan Steps</h1><ul role=\"list\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"flex justify-between\"><a href=\"/admin/plans\"><div class=\"px-2 bg-red text-center text-dark text-xl\">Cancel</div></a> <button type=\"submit\"><div class=\"px-2 bg-green text-center text-dark text-xl\">Modify</div></button></div></form><div class=\"py-2 mx-auto w-1/3 space-y-2 bg-blue\"><h1 class=\"text-cream px-2 text-xl text-center\">Plan Steps</h1><div id=\"steps\" class=\"pb-2 grid gap-y-4 grid-cols-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, s := range p.Steps {
-			templ_7745c5c3_Err = Step(s.ID, p.ID, s.Description, s.Done).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = TemplateStep(s.ID, p.ID, s.Description).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ul></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = AddTemplateStep().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -114,7 +122,7 @@ func PlanGridElem(p models.Plan) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/admin/plans.templ`, Line: 44, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/admin/plans.templ`, Line: 45, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -127,7 +135,7 @@ func PlanGridElem(p models.Plan) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(p.Steps)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/admin/plans.templ`, Line: 45, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/admin/plans.templ`, Line: 46, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -229,43 +237,51 @@ func PlanPage(p models.Plan) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" method=\"PUT\" hx-disabled-elt=\"input[type=&#39;text&#39;], input[type=&#39;password&#39;], button\"><label for=\"planname\" class=\"mx-auto font-medium text-xl text-light\">Plan name</label> <input type=\"text\" id=\"planname\" name=\"name\" required class=\"bg-mint h-8 text-light text-center text-xl\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" method=\"PUT\" hx-disabled-elt=\"input[type=&#39;text&#39;], input[type=&#39;password&#39;], button\"><label for=\"planname\" class=\"mx-auto font-medium text-xl text-light\">Plan name</label> <input type=\"text\" id=\"planname\" name=\"name\" required class=\"bg-cream h-8 text-dark text-center text-xl\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/admin/plans.templ`, Line: 74, Col: 123}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/admin/plans.templ`, Line: 75, Col: 123}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <label for=\"plandesc\" class=\"mx-auto font-medium text-xl text-light\">Plan description</label> <input type=\"text\" id=\"plandesc\" name=\"desc\" required class=\"bg-mint h-8 text-light text-center text-xl\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <label for=\"plandesc\" class=\"mx-auto font-medium text-xl text-light\">Plan description</label> <input type=\"text\" id=\"plandesc\" name=\"desc\" required class=\"bg-cream h-8 text-dark text-center text-xl\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(p.Description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/admin/plans.templ`, Line: 76, Col: 130}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/admin/plans.templ`, Line: 77, Col: 130}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"flex justify-between\"><a href=\"/admin/plans\"><div class=\"p-2 bg-red text-center text-dark text-xl\">Cancel</div></a> <button type=\"submit\"><div class=\"p-2 bg-green text-center text-dark text-xl\">Modify</div></button></div></form><div class=\"flex flex-col mx-auto w-1/3 space-y-2 bg-blue\"><h1 class=\"mx-auto text-cream p-2 text-xl\">Plan Steps</h1><ul role=\"list\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"flex justify-between\"><a href=\"/admin/plans\"><div class=\"px-2 bg-red text-center text-dark text-xl\">Cancel</div></a> <button type=\"submit\"><div class=\"px-2 bg-green text-center text-dark text-xl\">Modify</div></button></div></form><div class=\"py-2 mx-auto w-1/3 space-y-2 bg-blue\"><h1 class=\"text-cream px-2 text-xl text-center\">Plan Steps</h1><div id=\"steps\" class=\"pb-2 grid gap-y-4 grid-cols-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, s := range p.Steps {
-			templ_7745c5c3_Err = Step(s.ID, p.ID, s.Description, s.Done).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = TemplateStep(s.ID, p.ID, s.Description).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ul></div></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = AddTemplateStep().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
