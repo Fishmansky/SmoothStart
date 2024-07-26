@@ -23,7 +23,7 @@ func NewAdminHandler(d *sql.DB) *AdminHandler {
 	}
 }
 
-func (a AdminHandler) getPlans() ([]models.Plan, error) {
+func (a AdminHandler) GetTemplatePlans() ([]models.Plan, error) {
 	var plans []models.Plan
 	rows, err := a.db.Query("Select * FROM plan_templates")
 	if err != nil {
@@ -45,7 +45,7 @@ func (a AdminHandler) getPlans() ([]models.Plan, error) {
 	return plans, nil
 
 }
-func (a AdminHandler) getPlan(i int) (models.Plan, error) {
+func (a AdminHandler) GetTemplatePlan(i int) (models.Plan, error) {
 	var plan models.Plan
 	rows, err := a.db.Query("Select * FROM plan_templates WHERE id = $1", i)
 	if err != nil {
@@ -77,6 +77,26 @@ func (a AdminHandler) getMemberPlan(id int) (models.Plan, error) {
 	json.Unmarshal(s, &steps)
 	plan.Steps = append(plan.Steps, steps...)
 	return plan, nil
+}
+
+func (a AdminHandler) AddPlanTemplate(name string, desc string) error {
+	s, err := json.Marshal([]models.Step{})
+	if err != nil {
+		return err
+	}
+	_, err = a.db.Exec("INSERT INTO plan_templates (name, description,steps) VALUES ($1, $2, $3)", name, desc, s)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a AdminHandler) EditPlanTemplate(id int, name string, desc string) error {
+	_, err := a.db.Exec("UPDATE plan_templates SET name = $1, description = $2 WHERE id = $3", name, desc, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (a AdminHandler) UpdateTemplateStep(planId int, stepId int, desc string) error {
@@ -135,7 +155,12 @@ func (a AdminHandler) AddStepToPlan(id int, step string) (int, error) {
 		return -1, err
 	}
 	json.Unmarshal(s, &steps)
-	last := steps[len(steps)-1].ID + 1
+	var last int
+	if len(steps) > 0 {
+		last = steps[len(steps)-1].ID + 1
+	} else {
+		last = 0
+	}
 	steps = append(steps, models.Step{
 		ID:          last,
 		Description: step,
@@ -203,7 +228,7 @@ func (a AdminHandler) TeamPage(c echo.Context) error {
 }
 func (a AdminHandler) PlansPage(c echo.Context) error {
 	data := admin.NewPlanPageViewModel()
-	plans, err := a.getPlans()
+	plans, err := a.GetTemplatePlans()
 	if err != nil {
 		slog.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, err.Error())
@@ -218,7 +243,7 @@ func (a AdminHandler) PlanPage(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	plan, err := a.getPlan(i)
+	plan, err := a.GetTemplatePlan(i)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -226,6 +251,21 @@ func (a AdminHandler) PlanPage(c echo.Context) error {
 		return render(c, admin.Plan(plan))
 	}
 	return render(c, admin.PlanPage(plan))
+}
+
+func (a AdminHandler) AddPlanPage(c echo.Context) error {
+	return render(c, admin.AddPlanPage())
+}
+
+func (a AdminHandler) AddPlan(c echo.Context) error {
+	name := c.FormValue("name")
+	desc := c.FormValue("desc")
+	err := a.AddPlanTemplate(name, desc)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	c.Response().Header().Set("HX-Location", "/user/home")
+	return c.Redirect(http.StatusMovedPermanently, "/admin/plans")
 }
 
 func (a AdminHandler) MemberPlanPage(c echo.Context) error {
@@ -267,7 +307,7 @@ func (a AdminHandler) MemberPlanStepStatusUpdate(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Status updated")
 }
 
-func (a AdminHandler) AddStep(c echo.Context) error {
+func (a AdminHandler) AddTemplateStep(c echo.Context) error {
 	desc := c.FormValue("description")
 	cur := c.Request().Header.Get("HX-Current-URL")
 	if cur == "" {
@@ -318,4 +358,19 @@ func (a AdminHandler) EditStep(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return render(c, admin.TemplateStep(sid, pid, desc))
+}
+
+func (a AdminHandler) EditTemplate(c echo.Context) error {
+	i := c.FormValue("id")
+	id, err := strconv.Atoi(i)
+	if err != nil {
+		return err
+	}
+	name := c.FormValue("name")
+	desc := c.FormValue("desc")
+	err = a.EditPlanTemplate(id, name, desc)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, "Plan modified")
 }

@@ -16,11 +16,11 @@ templ TemplateStep(stepId int, planId int, descr string) {
 
 templ TemplateStepEdit(stepId int, planId int, descr string) {
 	<div id={ fmt.Sprintf("step-%d",stepId) } class="p-2 bg-cream text-center w-3/4 mx-auto text-dark text-xl"> 
-		<form>
+		<form hx-put="/admin/plans/editstep" hx-target={ fmt.Sprintf("#step-%d",stepId) } hx-swap="outerHTML">
 		<input type="text" name="description" class="bg-mint text-white text-xl text-center" value={ descr } required>
 		<input type="hidden" name="plan" value={ fmt.Sprintf("%d",planId)}>
 		<input type="hidden" name="step" value={ fmt.Sprintf("%d",stepId) }>
-		<button type="submit" class="px-2 bg-green text-dark text-center text-xl" type="submit" hx-put="/admin/plans/editstep" hx-target={ fmt.Sprintf("#step-%d",stepId) } hx-swap="outerHTML">
+		<button type="submit" class="px-2 bg-green text-dark text-center text-xl" type="submit">
 		Modify
 		</button>
 		</form>
@@ -29,9 +29,9 @@ templ TemplateStepEdit(stepId int, planId int, descr string) {
 
 templ AddTemplateStep() {
 	<div class="p-2 w-3/4 mx-auto bg-cream"> 
-		<form class="flex justify-between" hx-on::after-request=" if(event.detail.successful) this.reset()">
+		<form class="flex justify-between" hx-on::after-request=" if(event.detail.successful) this.reset()" hx-put="/admin/plans/addstep" hx-target="#steps" hx-swap="beforeend">
 		<input type="text" name="description" class="bg-mint text-white text-xl text-center" required>
-		<button type="submit" class="px-2 bg-green text-dark text-center text-xl" type="submit" hx-put="/admin/plans/addstep" hx-target="#steps" hx-swap="beforeend">
+		<button type="submit" class="px-2 bg-green text-dark text-center text-xl" type="submit">
 		Add
 		</button>
 		</form>
