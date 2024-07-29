@@ -47,12 +47,16 @@ func (s *SmoothStartServer) Routes() {
 	s.Server.GET("/", loginHandler.HandleLoginPage)
 	s.Server.POST("/login", loginHandler.HandleLogin)
 	s.Server.GET("/validate", auth.Validate(loginHandler.Validate))
+	s.Server.GET("/refresh", loginHandler.HandleRefreshPage)
+	s.Server.PUT("/refresh", loginHandler.RedirectToRefreshPage)
+	s.Server.POST("/refresh", loginHandler.HandleRefreshTokens)
 
 	// user routes
 	user := s.Server.Group("/user")
 	user.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey:  []byte(os.Getenv("SECRET_KEY")),
-		TokenLookup: "cookie:jwt",
+		SigningKey:   []byte(os.Getenv("SECRET_KEY")),
+		TokenLookup:  "cookie:jwt, cookie:refresh-jwt",
+		ErrorHandler: loginHandler.HandleExpiredToken,
 	}))
 	user.GET("/home", auth.Validate(userHandler.HomePage), auth.IsUser)
 	user.GET("/plan", auth.Validate(userHandler.PlanPage), auth.IsUser)
@@ -62,8 +66,9 @@ func (s *SmoothStartServer) Routes() {
 	// admin routes
 	admin := s.Server.Group("/admin")
 	admin.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey:  []byte(os.Getenv("SECRET_KEY")),
-		TokenLookup: "cookie:jwt",
+		SigningKey:   []byte(os.Getenv("SECRET_KEY")),
+		TokenLookup:  "cookie:jwt, cookie:refresh-jwt",
+		ErrorHandler: loginHandler.HandleExpiredToken,
 	}))
 	admin.GET("/home", auth.Validate(adminHandler.HomePage), auth.IsAdmin)
 	admin.GET("/team", auth.Validate(adminHandler.TeamPage), auth.IsAdmin)

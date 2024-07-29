@@ -24,6 +24,13 @@ type JwtSSSToken struct {
 	jwt.RegisteredClaims
 }
 
+func (l LoginHandler) ParseAccessToken(tokenString string) *JwtSSSToken {
+	token, _ := jwt.ParseWithClaims(tokenString, &JwtSSSToken{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(l.secret), nil
+	})
+	return token.Claims.(*JwtSSSToken)
+}
+
 func (l LoginHandler) createAccessToken(u *models.User) (string, error) {
 	id := uuid.New().ID()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
@@ -41,7 +48,7 @@ func (l LoginHandler) createAccessToken(u *models.User) (string, error) {
 		return "", err
 	}
 	ctx := context.Background()
-	err = l.redis.Set(ctx, tokenString, "valid", time.Minute*15).Err()
+	err = l.redis.Set(ctx, tokenString, "valid", time.Minute*2).Err()
 	if err != nil {
 		return "", err
 	}
@@ -64,8 +71,87 @@ func (l LoginHandler) createRefreshToken(u *models.User) (string, error) {
 		log.Println(err)
 		return "", err
 	}
-
+	ctx := context.Background()
+	err = l.redis.Set(ctx, tokenString, "valid", time.Hour*24).Err()
+	if err != nil {
+		return "", err
+	}
 	return tokenString, nil
+}
+
+func (l LoginHandler) VerifyToken(tokenString string) error {
+	token, err := jwt.ParseWithClaims(tokenString, &JwtSSSToken{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(l.secret), nil
+	})
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	result := l.redis.Get(ctx, tokenString)
+	if result.Val() == "blacklisted" {
+		return fmt.Errorf("Token blacklisted!")
+	}
+	ttl, err := l.redis.TTL(ctx, tokenString).Result()
+	if err != nil {
+		return err
+	}
+	if ttl == -2 {
+		return fmt.Errorf("Token doesn't exist!")
+	}
+	if ttl == -1 {
+		return fmt.Errorf("Token has no expiry date!")
+	}
+	if !token.Valid {
+		return fmt.Errorf("Invalid token!")
+	}
+
+	return nil
+}
+
+func (l LoginHandler) HandleRefreshTokens(c echo.Context) error {
+	ct, err := c.Cookie("refresh-jwt")
+	if err != nil {
+		return err
+	}
+	err = l.VerifyToken(ct.Value)
+	if err != nil {
+		return err
+	}
+	rt := l.ParseAccessToken(ct.Value)
+	u, err := l.getUser(rt.Username)
+	if err != nil {
+		return err
+	}
+	// invalidate current refresh token
+	l.invalidateToken(ct.Value)
+	// set access jwt
+	tokenString, err := l.createAccessToken(u)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "No username found")
+	}
+	accessCookie := new(http.Cookie)
+	accessCookie.Name = "jwt"
+	accessCookie.Value = tokenString
+	accessCookie.HttpOnly = true
+	accessCookie.Expires = time.Now().Add(30 * time.Minute)
+	c.SetCookie(accessCookie)
+	// set refresh jwt
+	tokenString, err = l.createRefreshToken(u)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "No username found")
+	}
+	refreshCookie := new(http.Cookie)
+	refreshCookie.Name = "refresh-jwt"
+	refreshCookie.Value = tokenString
+	refreshCookie.HttpOnly = true
+	refreshCookie.Expires = time.Now().Add(24 * time.Hour)
+	c.SetCookie(refreshCookie)
+	if u.IsAdmin {
+		c.Response().Header().Set("HX-Location", "/admin/home")
+	} else {
+		c.Response().Header().Set("HX-Location", "/user/home")
+	}
+	return c.JSON(http.StatusOK, "Login succesfull")
 }
 
 func (l LoginHandler) verifyToken(tokenString string) error {
@@ -107,7 +193,18 @@ func NewLoginHandler(d *sql.DB, r *redis.Client, s string) *LoginHandler {
 	}
 }
 
-func (l LoginHandler) getUser(username string, password string) (*models.User, error) {
+func (l LoginHandler) getUser(username string) (*models.User, error) {
+	var user models.User
+	if err := l.db.QueryRow("SELECT id, username, fname, sname, is_admin FROM users WHERE username = $1", username).Scan(&user.ID, &user.Username, &user.Fname, &user.Sname, &user.IsAdmin); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("%s\n", "User not found")
+		}
+		return nil, fmt.Errorf("%s\n", err)
+	}
+	return &user, nil
+}
+
+func (l LoginHandler) findUser(username string, password string) (*models.User, error) {
 	var user models.User
 	if err := l.db.QueryRow("SELECT id, username, fname, sname, is_admin FROM users WHERE username = $1 AND password = $2", username, password).Scan(&user.ID, &user.Username, &user.Fname, &user.Sname, &user.IsAdmin); err != nil {
 		if err == sql.ErrNoRows {
@@ -151,6 +248,11 @@ func (l LoginHandler) HandleLogout(c echo.Context) error {
 		return err
 	}
 	l.invalidateToken(cookie.Value)
+	cookie, err = c.Cookie("refresh-jwt")
+	if err != nil {
+		return err
+	}
+	l.invalidateToken(cookie.Value)
 	c.Response().Header().Set("HX-Location", "/")
 	return c.JSON(http.StatusOK, "Logout succesfull")
 }
@@ -167,25 +269,55 @@ func (l LoginHandler) HandleLogin(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Bad login data")
 	}
 	// find user in DB
-	u, err := l.getUser(data.Username, data.Password)
+	u, err := l.findUser(data.Username, data.Password)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	// set jwt
+	// set access jwt
 	tokenString, err := l.createAccessToken(u)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, "No username found")
 	}
-	cookie := new(http.Cookie)
-	cookie.Name = "jwt"
-	cookie.Value = tokenString
-	cookie.HttpOnly = true
-	cookie.Expires = time.Now().Add(24 * time.Hour)
-	c.SetCookie(cookie)
+	accessCookie := new(http.Cookie)
+	accessCookie.Name = "jwt"
+	accessCookie.Value = tokenString
+	accessCookie.HttpOnly = true
+	accessCookie.Expires = time.Now().Add(30 * time.Minute)
+	c.SetCookie(accessCookie)
+	// set refresh jwt
+	tokenString, err = l.createRefreshToken(u)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "No username found")
+	}
+	refreshCookie := new(http.Cookie)
+	refreshCookie.Name = "refresh-jwt"
+	refreshCookie.Value = tokenString
+	refreshCookie.HttpOnly = true
+	refreshCookie.Expires = time.Now().Add(24 * time.Hour)
+	c.SetCookie(refreshCookie)
 	if u.IsAdmin {
 		c.Response().Header().Set("HX-Location", "/admin/home")
 	} else {
 		c.Response().Header().Set("HX-Location", "/user/home")
 	}
 	return c.JSON(http.StatusOK, "Login succesfull")
+}
+
+func (l LoginHandler) HandleRefreshPage(c echo.Context) error {
+	c.Response().Header().Set("HX-Push-URL", "/refresh")
+	c.Response().Header().Set("HX-Refresh", "true")
+	return render(c, layout.RefreshTokensPage())
+}
+
+func (l LoginHandler) HandleExpiredToken(c echo.Context, err error) error {
+	if err != nil {
+		return c.Redirect(http.StatusFound, "/refresh")
+	}
+	return nil
+}
+
+func (l LoginHandler) RedirectToRefreshPage(c echo.Context) error {
+	c.Response().Header().Set("HX-Push-URL", "/refresh")
+	c.Response().Header().Set("HX-Refresh", "true")
+	return nil
 }
