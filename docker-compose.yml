@@ -5,7 +5,7 @@ services:
     image: postgres:latest
     restart: always
     shm_size: 128mb
-    expose:
+    ports:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -15,19 +15,5 @@ services:
   redis:
     image: redis:latest
     restart: always
-    expose:
-      - "6379:6379"
-
-  app:
-    build: .
     ports:
-      - "8080:8080"
-    depends_on:
-      - db
-      - redis
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      SECRET_KEY: ${SECRET_KEY}
+      - "6379:6379"
