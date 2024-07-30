@@ -70,7 +70,7 @@ func (s *SmoothStartServer) DBInit() {
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	_, err = s.DB.Query("CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(255) NOT NULL UNIQUE, fname VARCHAR(255) NOT NULL, sname VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, is_admin BOOLEAN NOT NULL);")
+	_, err = s.DB.Query("CREATE TABLE users (id SERIAL PRIMARY KEY, username VARCHAR(255) NOT NULL UNIQUE, fname VARCHAR(255) NOT NULL, lname VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, is_admin BOOLEAN NOT NULL);")
 	if err != nil {
 		slog.Error(err.Error())
 	}
@@ -82,11 +82,11 @@ func (s *SmoothStartServer) DBInit() {
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	_, err = s.DB.Query("INSERT INTO users (username, fname, sname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "admin", "ad", "min", "test123", 1)
+	_, err = s.DB.Query("INSERT INTO users (username, fname, lname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "admin", "ad", "min", "test123", 1)
 	if err != nil {
 		slog.Error(err.Error())
 	}
-	_, err = s.DB.Query("INSERT INTO users (username, fname, sname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "user1", "John", "Long", "test123", 0)
+	_, err = s.DB.Query("INSERT INTO users (username, fname, lname, password, is_admin) VALUES ($1, $2, $3, $4, $5);", "user1", "John", "Long", "test123", 0)
 	if err != nil {
 		slog.Error(err.Error())
 	}

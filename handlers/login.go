@@ -195,7 +195,7 @@ func NewLoginHandler(d *sql.DB, r *redis.Client, s string) *LoginHandler {
 
 func (l LoginHandler) getUser(username string) (*models.User, error) {
 	var user models.User
-	if err := l.db.QueryRow("SELECT id, username, fname, sname, is_admin FROM users WHERE username = $1", username).Scan(&user.ID, &user.Username, &user.Fname, &user.Sname, &user.IsAdmin); err != nil {
+	if err := l.db.QueryRow("SELECT id, username, fname, lname, is_admin FROM users WHERE username = $1", username).Scan(&user.ID, &user.Username, &user.Fname, &user.Lname, &user.IsAdmin); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("%s\n", "User not found")
 		}
@@ -206,7 +206,7 @@ func (l LoginHandler) getUser(username string) (*models.User, error) {
 
 func (l LoginHandler) findUser(username string, password string) (*models.User, error) {
 	var user models.User
-	if err := l.db.QueryRow("SELECT id, username, fname, sname, is_admin FROM users WHERE username = $1 AND password = $2", username, password).Scan(&user.ID, &user.Username, &user.Fname, &user.Sname, &user.IsAdmin); err != nil {
+	if err := l.db.QueryRow("SELECT id, username, fname, lname, is_admin FROM users WHERE username = $1 AND password = $2", username, password).Scan(&user.ID, &user.Username, &user.Fname, &user.Lname, &user.IsAdmin); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("%s\n", "User not found")
 		}
@@ -218,7 +218,7 @@ func (l LoginHandler) findUser(username string, password string) (*models.User, 
 func ValidateLoginData(data *models.LoginData) error {
 	// validate login data
 	if data.Username == "" || data.Password == "" {
-		return errors.New("")
+		return errors.New("Empty login credentials")
 	}
 	// validated
 	return nil

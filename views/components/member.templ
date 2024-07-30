@@ -1,10 +1,14 @@
 package components
 
-templ MemberBlock(name string, hasPlan bool) {
+import (
+	"fmt"
+)
+
+templ MemberBlock(name string, id int, hasPlan bool) {
 	<div class="w-48 h-48 rounded-xl bg-blue flex flex-col justify-start hover:justify-between items-center group">
 		<div class="pt-2 text-light text-2xl">{ name }</div>
 		<div class="w-32 h-32 rounded-full bg-mint group-hover:hidden transition transition-transform duration-150"></div>
-		<div class="text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer">Edit</div>
+		<div class="text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer" hx-get={ fmt.Sprintf("/admin/team/edit-member/%d",id) } hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">Edit</div>
 		if hasPlan {
 		<div class="pb-2 text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer">See plan</div>
 		} else {

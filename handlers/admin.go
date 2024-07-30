@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"smoothstart/models"
@@ -45,11 +46,11 @@ func (a AdminHandler) GetTemplatePlans() ([]models.Plan, error) {
 	return plans, nil
 
 }
-func (a AdminHandler) GetTemplatePlan(i int) (models.Plan, error) {
+func (a AdminHandler) GetTemplatePlan(i int) (*models.Plan, error) {
 	var plan models.Plan
 	rows, err := a.db.Query("Select * FROM plan_templates WHERE id = $1", i)
 	if err != nil {
-		slog.Info(err.Error())
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -57,13 +58,21 @@ func (a AdminHandler) GetTemplatePlan(i int) (models.Plan, error) {
 		var s []byte
 		err := rows.Scan(&plan.ID, &plan.Name, &plan.Description, &s)
 		if err != nil {
-			return plan, err
+			return nil, err
 		}
 		var steps []models.Step
 		json.Unmarshal(s, &steps)
 		plan.Steps = append(plan.Steps, steps...)
 	}
-	return plan, nil
+	return &plan, nil
+}
+
+func (a AdminHandler) getMember(id int) (*models.User, error) {
+	var u models.User
+	if err := a.db.QueryRow("Select username, fname, lname FROM users WHERE id = $1", id).Scan(&u.Username, &u.Fname, &u.Lname); err != nil {
+		return nil, err
+	}
+	return &u, nil
 }
 
 func (a AdminHandler) getMemberPlan(id int) (models.Plan, error) {
@@ -178,32 +187,12 @@ func (a AdminHandler) AddStepToPlan(id int, step string) (int, error) {
 }
 
 func (a AdminHandler) HomePage(c echo.Context) error {
-	var data []admin.DashboardUserData
-	rows, err := a.db.Query("SELECT id, fname, sname FROM users WHERE is_admin = '0'")
-	if err != nil {
-		return c.JSON(http.StatusNoContent, "No teammates found")
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var u models.User
-		err := rows.Scan(&u.ID, &u.Fname, &u.Sname)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, "Error scanning user sql")
-		}
-		up, err := a.getMemberPlan(u.ID)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, "Error scanning user sql")
-		}
-		data = append(data, admin.DashboardUserData{u, up.CompletionStatus()})
-	}
-
-	return render(c, admin.Home(data))
+	return render(c, admin.Home())
 }
 
 func (a AdminHandler) TeamPage(c echo.Context) error {
 	var users []models.User
-	rows, err := a.db.Query("SELECT id, fname, sname FROM users WHERE is_admin = '0'")
+	rows, err := a.db.Query("SELECT id, fname, lname FROM users WHERE is_admin = '0'")
 	if err != nil {
 		return c.JSON(http.StatusNoContent, "No teammates found")
 	}
@@ -211,7 +200,7 @@ func (a AdminHandler) TeamPage(c echo.Context) error {
 
 	for rows.Next() {
 		var u models.User
-		err := rows.Scan(&u.ID, &u.Fname, &u.Sname)
+		err := rows.Scan(&u.ID, &u.Fname, &u.Lname)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, "Error scanning user sql")
 		}
@@ -248,9 +237,9 @@ func (a AdminHandler) PlanPage(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	if isHtmx(c) {
-		return render(c, admin.Plan(plan))
+		return render(c, admin.Plan(*plan))
 	}
-	return render(c, admin.PlanPage(plan))
+	return render(c, admin.PlanPage(*plan))
 }
 
 func (a AdminHandler) AddPlanPage(c echo.Context) error {
@@ -264,7 +253,6 @@ func (a AdminHandler) AddPlan(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	c.Response().Header().Set("HX-Location", "/user/home")
 	return c.Redirect(http.StatusMovedPermanently, "/admin/plans")
 }
 
@@ -373,4 +361,94 @@ func (a AdminHandler) EditTemplate(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, "Plan modified")
+}
+
+func (a AdminHandler) addMember(data admin.MemberData) error {
+	_, err := a.db.Exec("INSERT INTO users (username, fname, lname, password, is_admin) VALUES ($1, $2, $3, $4, false)", data.Username, data.Fname, data.Lname, data.Password)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateMemberData(data admin.MemberData) error {
+	if data.Username == "" || data.Fname == "" || data.Lname == "" || data.Password == "" {
+		return errors.New("Empty member credentials")
+	}
+	return nil
+}
+
+func validateMemberEditData(data admin.MemberData) error {
+	if data.Username == "" || data.Fname == "" || data.Lname == "" {
+		return errors.New("Empty member credentials")
+	}
+	return nil
+}
+
+func (a AdminHandler) AddMemberPage(c echo.Context) error {
+	data := admin.MemberData{}
+	return render(c, admin.AddMemberPage(data))
+}
+
+func (a AdminHandler) HandleAddMember(c echo.Context) error {
+	var data admin.MemberData
+	err := c.Bind(&data)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	}
+	err = validateMemberData(data)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	err = a.addMember(data)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return c.Redirect(http.StatusMovedPermanently, "/admin/team")
+}
+
+func (a AdminHandler) editMember(data admin.MemberData) error {
+	_, err := a.db.Exec("UPDATE users SET username = $1, fname = $2, lname = $3 WHERE id = $4", data.Username, data.Fname, data.Lname, data.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a AdminHandler) EditMemberPage(c echo.Context) error {
+	i := c.Param("id")
+	id, err := strconv.Atoi(i)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	}
+	u, err := a.getMember(id)
+	if err != nil {
+		return err
+	}
+	data := admin.MemberData{
+		Username: u.Username,
+		Fname:    u.Fname,
+		Lname:    u.Lname,
+	}
+	if isHtmx(c) {
+		return render(c, admin.EditMember(data, id))
+	}
+	return render(c, admin.EditMemberPage(data, id))
+}
+
+func (a AdminHandler) HandleEditMember(c echo.Context) error {
+	var data admin.MemberData
+	err := c.Bind(&data)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "bad request")
+	}
+	err = validateMemberEditData(data)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	err = a.editMember(data)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return c.Redirect(http.StatusMovedPermanently, "/admin/team")
 }

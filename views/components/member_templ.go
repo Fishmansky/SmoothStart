@@ -10,7 +10,11 @@ import "context"
 import "io"
 import "bytes"
 
-func MemberBlock(name string, hasPlan bool) templ.Component {
+import (
+	"fmt"
+)
+
+func MemberBlock(name string, id int, hasPlan bool) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -30,13 +34,26 @@ func MemberBlock(name string, hasPlan bool) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/member.templ`, Line: 5, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/member.templ`, Line: 9, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"w-32 h-32 rounded-full bg-mint group-hover:hidden transition transition-transform duration-150\"></div><div class=\"text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer\">Edit</div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"w-32 h-32 rounded-full bg-mint group-hover:hidden transition transition-transform duration-150\"></div><div class=\"text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer\" hx-get=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/admin/team/edit-member/%d", id))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/components/member.templ`, Line: 11, Col: 174}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#app-view\" hx-swap=\"innerHTML\" hx-push-url=\"true\">Edit</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -9,7 +9,7 @@ type User struct {
 	ID       int    `json:"id"`
 	Username string `json:"username"`
 	Fname    string `json:"fname"`
-	Sname    string `json:"sname"`
+	Lname    string `json:"lname"`
 	Password string `json:"password"`
 	IsAdmin  bool   `json:"is_admin"`
 	HasPlan  bool
