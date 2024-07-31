@@ -1,0 +1,36 @@
+package components
+
+import (
+	"fmt"
+	"smoothstart/models"
+)
+
+templ AssignPlan(plans []models.Plan, id int) {
+	<form id={ fmt.Sprintf("assign-%d",id) } class="flex flex-col items-center">
+		<input type="hidden" name="memberid" value={ fmt.Sprintf("%d",id) } >
+		<label class="text-light text-2xl" for="planid">Select Plan</label>
+  		<select id="planid" name="planid">
+		for _, p := range plans {
+			<option value={ fmt.Sprintf("%d",p.ID) } >{ p.Name }</option>
+		}
+		</select>
+		<div class="pb-2 text-light text-2xl cursor-pointer" hx-post="/admin/team/assign" hx-target={ fmt.Sprintf("#assign-%d",id) } hx-swap="outerHTML">Assign</div>
+	</form>
+}
+
+templ SeePlan(userid int) {
+	<a class="pb-2 text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer" href={ templ.URL(fmt.Sprintf("/admin/team/memberplan/%d",userid)) }>See plan</a>
+}
+
+templ MemberBlock(name string, id int, hasPlan bool) {
+	<div class="w-48 h-48 rounded-xl bg-blue flex flex-col justify-start hover:justify-between items-center group">
+		<div class="pt-2 text-light text-2xl">{ name }</div>
+		<div class="w-32 h-32 rounded-full bg-mint group-hover:hidden transition transition-transform duration-150"></div>
+		<div class="text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer" hx-get={ fmt.Sprintf("/admin/team/edit-member/%d",id) } hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">Edit</div>
+		if hasPlan {
+			@SeePlan(id)
+		} else {
+			<div class="pb-2 text-light text-2xl hidden group-hover:inline transition transition-transform duration-300 cursor-pointer" hx-get={ fmt.Sprintf("/admin/team/assign/%d",id) } hx-swap="outerHTML">Assign plan</div>
+		}
+	</div>
+}

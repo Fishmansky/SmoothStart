@@ -1,0 +1,13 @@
+package admin
+
+templ Header() {
+	<div class="bg-blue px-12 flex justify-between">
+			<h1 class="p-4 text-light text-2xl font-semibold">SmoothStart</h1>
+			<div class="flex justify-end place-items-center">
+				<a class="p-2 cursor-pointer font-medium text-xl text-light" href="/admin/home" hx-push-url="true">Home</a>
+				<a class="p-2 cursor-pointer font-medium text-xl text-light" href="/admin/team" hx-push-url="true">Team</a>
+				<a class="p-2 cursor-pointer font-medium text-xl text-light" href="/admin/plans" hx-push-url="true">Plan</a>
+				<a class="p-2 cursor-pointer font-medium text-xl text-light" hx-post="/admin/logout" hx-push-url="true">Logout</a>
+			</div>
+	</div>
+}
