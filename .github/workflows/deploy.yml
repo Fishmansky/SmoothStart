@@ -38,33 +38,33 @@ jobs:
       - name: Copy files
         uses: appleboy/scp-action@v0.1.0
         with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        source: "."
-        target: "/home/admin/domains/smoothstart.proxilius.eu/public_html" 
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "."
+          target: "/home/admin/domains/smoothstart.proxilius.eu/public_html" 
 
       - name: Upload .env file
         uses: appleboy/scp-action@v0.1.0
         with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        source: ".env"
-        target: "/home/admin/domains/smoothstart.proxilius.eu/public_html/.env" # Replace with the appropriate path
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: ".env"
+          target: "/home/admin/domains/smoothstart.proxilius.eu/public_html/.env" # Replace with the appropriate path
 
       - name: Start application on server
         uses: appleboy/ssh-action@v0.1.0
         with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          cd /home/admin/domains/smoothstart.proxilius.eu/public_html          
-          make build
-          make run
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /home/admin/domains/smoothstart.proxilius.eu/public_html          
+            make build
+            make run
 
 
