@@ -44,7 +44,7 @@ jobs:
 
     steps:
       - name: Copy files
-        uses: appleboy/scp-action@v0.1.0
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -54,7 +54,7 @@ jobs:
           target: "/home/admin/domains/smoothstart.proxilius.eu/public_html" 
 
       - name: Upload .env file
-        uses: appleboy/scp-action@v0.1.0
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -64,7 +64,7 @@ jobs:
           target: "/home/admin/domains/smoothstart.proxilius.eu/public_html/.env" # Replace with the appropriate path
 
       - name: Start application on server
-        uses: appleboy/ssh-action@v0.1.0
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
