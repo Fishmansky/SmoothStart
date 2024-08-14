@@ -1,0 +1,70 @@
+name: Smoothstart CI CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Create .env file
+      run: |
+        echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+        echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env
+        echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
+        echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+        echo REDIS_HOST=${{ secrets.REDIS_HOST }} >> .env
+        echo REDIS_PORT=${{ secrets.REDIS_PORT }} >> .env
+        echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+
+    - name: Build
+      run: make build
+
+    - name: Run
+      run: make run
+  
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Copy files
+        uses: appleboy/scp-action@v0.1.0
+        with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        source: "."
+        target: "/home/admin/domains/smoothstart.proxilius.eu/public_html" 
+
+      - name: Upload .env file
+        uses: appleboy/scp-action@v0.1.0
+        with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        source: ".env"
+        target: "/home/admin/domains/smoothstart.proxilius.eu/public_html/.env" # Replace with the appropriate path
+
+      - name: Start application on server
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd /home/admin/domains/smoothstart.proxilius.eu/public_html          
+          make build
+          make run
+
+
