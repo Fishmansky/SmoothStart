@@ -46,30 +46,30 @@ jobs:
       - name: Copy files
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secret.SSH_HOST }}
-          username: ${{ secret.SSH_USER }}
-          key: ${{ secret.SSH_PRIVATE_KEY }}
-          port: ${{ secret.SSH_PORT }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           source: "."
           target: "/home/admin/domains/smoothstart.proxilius.eu/public_html" 
 
       - name: Upload .env file
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secret.SSH_HOST }}
-          username: ${{ secret.SSH_USER }}
-          key: ${{ secret.SSH_PRIVATE_KEY }}
-          port: ${{ secret.SSH_PORT }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           source: ".env"
           target: "/home/admin/domains/smoothstart.proxilius.eu/public_html/.env"
 
       - name: Start application on server
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secret.SSH_HOST }}
-          username: ${{ secret.SSH_USER }}
-          key: ${{ secret.SSH_PRIVATE_KEY }}
-          port: ${{ secret.SSH_PORT }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/admin/domains/smoothstart.proxilius.eu/public_html          
             make build
