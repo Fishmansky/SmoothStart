@@ -52,10 +52,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd ${{ secrets.TARGET_DIR }}
-            cd ..
-            git clone git@github-repo:Fishmansky/SmoothStart.git
-            cp -arf SmoothStart/ public_html/
-            rm -r SmoothStart
+            git clone git@github-repo:Fishmansky/SmoothStart.git .
 
       - name: Start application on server
         uses: appleboy/ssh-action@master
