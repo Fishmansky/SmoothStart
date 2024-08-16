@@ -51,8 +51,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: |
-            rm -r ${{ secrets.TARGET_DIR }}/*
+          rm: ${{ secrets.TARGET_DIR }}
 
       - name: Clone repo
         uses: appleboy/ssh-action@master
@@ -62,6 +61,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            mkdir ${{ secrets.TARGET_DIR }}
             cd ${{ secrets.TARGET_DIR }}
             git clone git@github-repo:Fishmansky/SmoothStart.git .
 
@@ -76,7 +76,7 @@ jobs:
           echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
 
       - name: Scp .env file
-        uses: appleboy/ssh-action@master
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
