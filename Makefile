@@ -4,7 +4,7 @@ COLOUR_BLUE=\033[0;34m
 build:
 	docker-compose build
 run:
-	docker-compose up -d
+	docker-compose -p smoothstart-app up -d
 switch-to-dev:
 	mv .env env_prod
 	mv .env.dev .env
