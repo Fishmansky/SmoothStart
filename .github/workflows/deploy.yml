@@ -101,5 +101,3 @@ jobs:
             docker-compose stop
             make build
             make run
-
-
