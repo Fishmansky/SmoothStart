@@ -43,6 +43,16 @@ jobs:
     needs: build
 
     steps:
+      - name: Clean terget dir
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            rm -r ${{ secrets.TARGET_DIR }}/*
+
       - name: Clone repo
         uses: appleboy/ssh-action@master
         with:
@@ -53,6 +63,26 @@ jobs:
           script: |
             cd ${{ secrets.TARGET_DIR }}
             git clone git@github-repo:Fishmansky/SmoothStart.git .
+
+      - name: Create .env file
+        run: |
+          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+          echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env
+          echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
+          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+          echo REDIS_HOST=${{ secrets.REDIS_HOST }} >> .env
+          echo REDIS_PORT=${{ secrets.REDIS_PORT }} >> .env
+          echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+
+      - name: Scp .env file
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: ".env"
+          target: ${{ secrets.TARGET_DIR }}
 
       - name: Start application on server
         uses: appleboy/ssh-action@master
