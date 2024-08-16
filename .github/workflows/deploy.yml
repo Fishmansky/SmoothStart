@@ -43,6 +43,12 @@ jobs:
     needs: build
 
     steps:
+      - name: Prepare tar package
+        run: |
+          mkdir ../deploy
+          cp -TR . ../deploy
+          tar -cvf deploy.tar ../deploy/
+
       - name: Copy files
         uses: appleboy/scp-action@master
         with:
@@ -50,8 +56,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: |
-            rsync -ave 'ssh -p ${{ secrets.SSH_PORT }}' --delete . ${{ secrets.TARGET_DIR }}
+          source: "deploy.tar"
+          target: ${{ secrets.TARGET_DIR }}
 
       - name: Start application on server
         uses: appleboy/ssh-action@master
@@ -61,8 +67,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            export TARGET_DIR=${{ secrets.TARGET_DIR }}
-            cd $TARGET_DIR          
+            cd ${{ secrets.TARGET_DIR }}
             make build
             make run
 
