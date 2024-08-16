@@ -43,7 +43,8 @@ jobs:
     needs: build
 
     steps:
-      - name: Clean terget dir
+      - uses: actions/checkout@v4
+      - name: Clean target dir
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -93,6 +94,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd ${{ secrets.TARGET_DIR }}
+            docker-compose stop
             make build
             make run
 

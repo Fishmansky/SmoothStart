@@ -1,5 +1,6 @@
 version: '3.9'
 
+name: smoothstart-app
 services:
   db:
     image: postgres:latest
