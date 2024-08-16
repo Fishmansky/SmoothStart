@@ -49,7 +49,7 @@ jobs:
           cp -TR . ../deploy
           tar -cvf deploy.tar ../deploy/
 
-      - name: Copy files
+      - name: Copy package
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -58,6 +58,17 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           source: "deploy.tar"
           target: ${{ secrets.TARGET_DIR }}
+      
+      - name: Untar package
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ${{ secrets.TARGET_DIR }}
+            tar -xvf deploy.tar
 
       - name: Start application on server
         uses: appleboy/ssh-action@master
