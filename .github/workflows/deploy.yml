@@ -56,6 +56,7 @@ jobs:
             cd ${{ secrets.TARGET_DIR }}
             rm -r *
             rm -r .git*
+            rm .env*
 
       - name: Clone repo
         uses: appleboy/ssh-action@master
