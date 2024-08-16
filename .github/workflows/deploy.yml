@@ -24,13 +24,13 @@ jobs:
     
     - name: Create .env file
       run: |
-        echo POSTGRES_PASSWORD=${{ vars.POSTGRES_PASSWORD }} >> .env
-        echo POSTGRES_HOST=${{ vars.POSTGRES_HOST }} >> .env
-        echo POSTGRES_DB=${{ vars.POSTGRES_DB }} >> .env
-        echo POSTGRES_USER=${{ vars.POSTGRES_USER }} >> .env
-        echo REDIS_HOST=${{ vars.REDIS_HOST }} >> .env
-        echo REDIS_PORT=${{ vars.REDIS_PORT }} >> .env
-        echo SECRET_KEY=${{ vars.SECRET_KEY }} >> .env
+        echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+        echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env
+        echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
+        echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+        echo REDIS_HOST=${{ secrets.REDIS_HOST }} >> .env
+        echo REDIS_PORT=${{ secrets.REDIS_PORT }} >> .env
+        echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
 
     - name: Build
       run: make build
@@ -51,7 +51,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: "."
-          target: "/home/admin/domains/smoothstart.proxilius.eu/public_html" 
+          target: ${{ secrets.TARGET_DIR }} 
 
       - name: Upload .env file
         uses: appleboy/scp-action@master
@@ -61,7 +61,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: ".env"
-          target: "/home/admin/domains/smoothstart.proxilius.eu/public_html/.env"
+          target: ${{ secrets.TARGET_DIR }} 
 
       - name: Start application on server
         uses: appleboy/ssh-action@master
@@ -71,7 +71,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd /home/admin/domains/smoothstart.proxilius.eu/public_html          
+            export TARGET_DIR=${{ secrets.TARGET_DIR }}
+            cd $TARGET_DIR          
             make build
             make run
 
