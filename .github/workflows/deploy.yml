@@ -50,8 +50,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: "."
-          target: ${{ secrets.TARGET_DIR }} 
+          script: |
+            rsync -ave 'ssh -p ${{ secrets.SSH_PORT }}' --delete . ${{ secrets.TARGET_DIR }}
 
       - name: Start application on server
         uses: appleboy/ssh-action@master
