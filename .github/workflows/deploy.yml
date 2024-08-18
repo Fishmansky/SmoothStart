@@ -66,7 +66,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            mkdir ${{ secrets.TARGET_DIR }}
             cd ${{ secrets.TARGET_DIR }}
             git clone git@github-repo:Fishmansky/SmoothStart.git .
 
