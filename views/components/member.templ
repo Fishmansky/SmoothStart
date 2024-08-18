@@ -19,8 +19,9 @@ templ AssignPlan(plans []models.Plan, id int) {
 }
 
 templ SeePlan(userid int) {
-	<a class="pb-2 text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer" href={ templ.URL(fmt.Sprintf("/admin/team/memberplan/%d",userid)) }>See plan</a>
+	<a class="pb-2 text-light text-2xl hidden group-hover:inline transition transition-transform duration-150 cursor-pointer" hx-get={ fmt.Sprintf("/admin/team/memberplan/%d",userid) } hx-target="#app-view" hx-swap="innerHTML" hx-push-url="true">See plan</a>
 }
+
 
 templ MemberBlock(name string, id int, hasPlan bool) {
 	<div class="w-48 h-48 rounded-xl bg-blue flex flex-col justify-start hover:justify-between items-center group">

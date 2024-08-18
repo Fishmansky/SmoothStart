@@ -2,6 +2,48 @@ package admin
 
 import "fmt"
 
+templ PlanStep(stepId int, planId int, done bool, descr string) {
+	<div id={ fmt.Sprintf("step-%d",stepId) } class="group"> 
+		<form class="p-2 flex space-x-1 bg-cream text-center w-3/4 mx-auto text-dark text-xl">
+		if done {
+		<p class="grow transition-transform"><s>{ descr} </s></p>
+		} else {
+		<p class="grow transition-transform">{ descr }</p>
+		} 
+		<input type="hidden" name="description" value={ descr }>
+		<input type="hidden" name="plan" value={ fmt.Sprintf("%d",planId)}>
+		<input type="hidden" name="step" value={ fmt.Sprintf("%d",stepId) }>
+		<input type="hidden" name="isdone" if done { value="1" } else { value="0" }>
+		<button type="submit" class="hidden group-hover:inline text-blue transition-transform" hx-post="/admin/team/memberplan/editstep" hx-include="[name='plan'], [name='step'], [name='isdone']" hx-target={ fmt.Sprintf("#step-%d",stepId) } hx-swap="outerHTML">Edit</button>
+		</form>
+	</div>
+}
+
+templ PlanStepEdit(stepId int, planId int, done bool, descr string) {
+	<div id={ fmt.Sprintf("step-%d",stepId) } class="p-2 bg-cream text-center w-3/4 mx-auto text-dark text-xl"> 
+		<form>
+		<input type="text" name="description" class="bg-mint text-white text-xl text-center" value={ descr } required>
+		<input type="checkbox" name="isdone" value="done" if done { checked } >
+		<input type="hidden" name="plan" value={ fmt.Sprintf("%d",planId)}>
+		<input type="hidden" name="step" value={ fmt.Sprintf("%d",stepId)}>
+		<button class="px-2 bg-green text-dark text-center text-xl" hx-put="/admin/team/memberplan/editstep" hx-include="[name='plan'], [name='step'], [name='isdone']" hx-target={ fmt.Sprintf("#step-%d",stepId) } hx-swap="outerHTML">
+		Modify
+		</button>
+		</form>
+	</div>
+}
+
+templ AddPlanStep() {
+	<div class="p-2 w-3/4 mx-auto bg-cream"> 
+		<form class="flex justify-between" hx-on::after-request=" if(event.detail.successful) this.reset()" hx-put="/admin/team/memberplan/addstep" hx-target="#steps" hx-swap="beforeend">
+		<input type="text" name="description" class="bg-mint text-white text-xl text-center" required>
+		<button type="submit" class="px-2 bg-green text-dark text-center text-xl" type="submit">
+		Add
+		</button>
+		</form>
+	</div>
+}
+
 templ TemplateStep(stepId int, planId int, descr string) {
 	<div id={ fmt.Sprintf("step-%d",stepId) } class="group"> 
 		<form class="p-2 flex space-x-1 bg-cream text-center w-3/4 mx-auto text-dark text-xl">

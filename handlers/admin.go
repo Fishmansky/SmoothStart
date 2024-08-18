@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"smoothstart/models"
@@ -158,7 +159,7 @@ func (a AdminHandler) UpdateStepStatus(planId int, stepId int) error {
 	}
 	return nil
 }
-func (a AdminHandler) AddStepToPlan(id int, step string) (int, error) {
+func (a AdminHandler) AddStepToTemplate(id int, step string) (int, error) {
 	var steps []models.Step
 	var s []byte
 	if err := a.db.QueryRow("Select steps FROM plan_templates WHERE id = $1", id).Scan(&s); err != nil {
@@ -181,6 +182,35 @@ func (a AdminHandler) AddStepToPlan(id int, step string) (int, error) {
 		return -1, err
 	}
 	_, err = a.db.Exec("UPDATE plan_templates SET steps = $1 WHERE id = $2", updatedSteps, id)
+	if err != nil {
+		return -1, err
+	}
+	return last, nil
+}
+
+func (a AdminHandler) AddStepToPlan(id int, step string) (int, error) {
+	var steps []models.Step
+	var s []byte
+	if err := a.db.QueryRow("Select steps FROM plans WHERE id = $1", id).Scan(&s); err != nil {
+		return -1, err
+	}
+	json.Unmarshal(s, &steps)
+	var last int
+	if len(steps) > 0 {
+		last = steps[len(steps)-1].ID + 1
+	} else {
+		last = 0
+	}
+	steps = append(steps, models.Step{
+		ID:          last,
+		Description: step,
+		Done:        false,
+	})
+	updatedSteps, err := json.Marshal(&steps)
+	if err != nil {
+		return -1, err
+	}
+	_, err = a.db.Exec("UPDATE plans SET steps = $1 WHERE id = $2", updatedSteps, id)
 	if err != nil {
 		return -1, err
 	}
@@ -308,7 +338,7 @@ func (a AdminHandler) AddTemplateStep(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	sid, err := a.AddStepToPlan(pid, desc)
+	sid, err := a.AddStepToTemplate(pid, desc)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -504,4 +534,113 @@ func (a AdminHandler) HandleAssignToMember(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return render(c, components.SeePlan(uid))
+}
+
+func (a AdminHandler) ShowMemberPlan(c echo.Context) error {
+	memberid := c.Param("id")
+	id, err := strconv.Atoi(memberid)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Bad request")
+	}
+	member, err := a.getMember(id)
+	if err != nil {
+		return err
+	}
+	plan, err := a.getMemberPlan(id)
+	if err != nil {
+		return err
+	}
+	if isHtmx(c) {
+		return render(c, admin.ShowPlan(member.Fname, plan))
+	}
+	return render(c, admin.ShowPlanPage(member.Fname, plan))
+}
+
+func (a AdminHandler) AddPlanStep(c echo.Context) error {
+	desc := c.FormValue("description")
+	cur := c.Request().Header.Get("HX-Current-URL")
+	if cur == "" {
+		return c.JSON(http.StatusBadRequest, "Bad request")
+	}
+	parts := strings.Split(cur, "/")
+	i := parts[len(parts)-1]
+	uid, err := strconv.Atoi(i)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	plan, err := a.getMemberPlan(uid)
+	if err != nil {
+		return err
+	}
+	pid := plan.ID
+	sid, err := a.AddStepToPlan(pid, desc)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return render(c, admin.PlanStep(sid, pid, false, desc))
+}
+
+func (a AdminHandler) GetEditPlanStep(c echo.Context) error {
+	desc := c.FormValue("description")
+	p := c.FormValue("plan")
+	isdone := c.FormValue("isdone")
+	fmt.Println(isdone)
+	done, err := strconv.ParseBool(isdone)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	pid, err := strconv.Atoi(p)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	s := c.FormValue("step")
+	sid, err := strconv.Atoi(s)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	return render(c, admin.PlanStepEdit(sid, pid, done, desc))
+}
+
+func (a AdminHandler) EditPlanStep(c echo.Context) error {
+	desc := c.FormValue("description")
+	isdone := c.FormValue("isdone")
+	done := false
+	if isdone == "done" {
+		done = true
+	}
+	p := c.FormValue("plan")
+	pid, err := strconv.Atoi(p)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	s := c.FormValue("step")
+	sid, err := strconv.Atoi(s)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+	err = a.UpdatePlanStep(pid, sid, done, desc)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return render(c, admin.PlanStep(sid, pid, done, desc))
+}
+
+func (a AdminHandler) UpdatePlanStep(planId int, stepId int, isdone bool, desc string) error {
+	var steps []models.Step
+	var s []byte
+	if err := a.db.QueryRow("Select steps FROM plans WHERE id = $1", planId).Scan(&s); err != nil {
+		return err
+	}
+	json.Unmarshal(s, &steps)
+	steps[stepId].Description = desc
+	steps[stepId].Done = isdone
+	updatedSteps, err := json.Marshal(&steps)
+	if err != nil {
+		return err
+	}
+	_, err = a.db.Exec("UPDATE plans SET steps = $1 WHERE id = $2", updatedSteps, planId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
