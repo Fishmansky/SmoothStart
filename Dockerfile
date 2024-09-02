@@ -1,4 +1,5 @@
 FROM golang:1.22
+ENV APP_ENV=prod
 RUN apt-get update && \
     apt-get install -y postgresql-client
 WORKDIR /app
@@ -11,4 +12,4 @@ RUN chmod +x /app/wait-for-db.sh
 
 EXPOSE 8080
 
-CMD ["/app/wait-for-db.sh", "--","/app/goapp"]
+CMD ["/app/wait-for-db.sh", "--", "/app/goapp"]

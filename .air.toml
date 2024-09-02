@@ -1,0 +1,36 @@
+# .air.toml configuration file
+
+# Root directory of your project
+root = "."
+tmp_dir = "tmp"
+
+# Build options
+[build]
+  cmd = "go build -o ./tmp/main"
+  bin = "./tmp/main"
+  full_bin = "APP_ENV=dev ./tmp/main"
+  delay = 1000 # ms
+
+# Optional configuration if you want to define specific file watchers
+[watch]
+  # Specify directories to watch and auto-restart on file changes
+  dirs = ["."]
+  
+  # Exclude directories from being watched
+  exclude_dirs = ["tmp", "vendor", "node_modules"]
+
+  # List of extensions to watch
+  extensions = [".go", ".tpl", ".tmpl", ".html"]
+
+  # If you want to watch specific files
+  include_files = ["**.go"]
+
+# Logging options
+[log]
+  level = "info"
+
+# Miscellaneous options
+[misc]
+  clean_on_exit = true
+  kill_on_bind_error = true
+

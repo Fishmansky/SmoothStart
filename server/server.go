@@ -30,7 +30,12 @@ func LoadEnvs() {
 }
 
 func (s *SmoothStartServer) ConnectDB() {
-	host := os.Getenv("POSTGRES_HOST")
+	var host string
+	if os.Getenv("APP_ENV") == "prod" {
+		host = os.Getenv("POSTGRES_HOST")
+	} else if os.Getenv("APP_ENV") == "dev" {
+		host = "localhost"
+	}
 	user := os.Getenv("POSTGRES_USER")
 	db := os.Getenv("POSTGRES_DB")
 	pass := os.Getenv("POSTGRES_PASSWORD")
@@ -40,10 +45,16 @@ func (s *SmoothStartServer) ConnectDB() {
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func (s *SmoothStartServer) ConnectRedis() {
-	host := os.Getenv("REDIS_HOST")
+	var host string
+	if os.Getenv("APP_ENV") == "prod" {
+		host = os.Getenv("REDIS_HOST")
+	} else if os.Getenv("APP_ENV") == "dev" {
+		host = "localhost"
+	}
 	port := os.Getenv("REDIS_PORT")
 	ops := &redis.Options{
 		Addr:     host + ":" + port,
