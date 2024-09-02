@@ -23,7 +23,7 @@ func Header() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"bg-mywhite px-12 flex justify-between\"><h1 class=\"p-4 text-dark text-2xl font-semibold\">SmoothStart</h1><div class=\"flex justify-end place-items-center\"><a class=\"p-2 cursor-pointer font-medium text-xl\" href=\"/user/home\" hx-push-url=\"true\">Home</a> <a class=\"p-2 cursor-pointer font-medium text-xl\" href=\"/user/plan\" hx-push-url=\"true\">Plan</a> <a class=\"p-2 cursor-pointer font-medium text-xl\" hx-post=\"/user/logout\" hx-push-url=\"true\">Logout</a></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"bg-blue px-12 flex justify-between\"><h1 class=\"p-4 text-light text-2xl font-semibold\">SmoothStart</h1><div class=\"flex justify-end place-items-center\"><a class=\"p-2 cursor-pointer font-medium text-xl text-light\" href=\"/user/home\" hx-push-url=\"true\">Home</a> <a class=\"p-2 cursor-pointer font-medium text-xl text-light\" href=\"/user/plan\" hx-push-url=\"true\">Plan</a> <a class=\"p-2 cursor-pointer font-medium text-xl text-light\" hx-post=\"/user/logout\" hx-push-url=\"true\">Logout</a></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
