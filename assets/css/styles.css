@@ -934,6 +934,11 @@ h4 {
   line-height: 1.75rem;
 }
 
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
 .font-medium {
   font-weight: 500;
 }
@@ -960,6 +965,19 @@ h4 {
 .text-light {
   --tw-text-opacity: 1;
   color: rgb(207 215 199 / var(--tw-text-opacity));
+}
+
+.text-green {
+  --tw-text-opacity: 1;
+  color: rgb(181 244 74 / var(--tw-text-opacity));
+}
+
+.opacity-100 {
+  opacity: 1;
+}
+
+.opacity-0 {
+  opacity: 0;
 }
 
 .shadow-lg {
@@ -1040,6 +1058,14 @@ h4 {
 
 .group:hover .group-hover\:animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.group:hover .group-hover\:opacity-0 {
+  opacity: 0;
+}
+
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
 }
 
 .peer:checked ~ .peer-checked\:opacity-50 {

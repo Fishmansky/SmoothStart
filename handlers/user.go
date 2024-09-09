@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -23,19 +24,21 @@ func NewUserHandler(d *sql.DB) *UserHandler {
 	}
 }
 func (u UserHandler) getUserID(c echo.Context) (int, error) {
-	var uID int
-	userName, err := c.Cookie("username")
-	if err != nil {
-		return uID, err
+	result := c.Get("username")
+	uName, ok := result.(string)
+	if ok == false {
+		return -1, errors.New("Unable to retrieve username")
 	}
-	if err := u.db.QueryRow("SELECT id  FROM users WHERE username = $1", userName.Value).Scan(&uID); err != nil {
+	var user models.User
+	if err := u.db.QueryRow("SELECT id, username, fname, lname, is_admin FROM users WHERE username = $1", uName).Scan(&user.ID, &user.Username, &user.Fname, &user.Lname, &user.IsAdmin); err != nil {
 		if err == sql.ErrNoRows {
-			return uID, fmt.Errorf("%s\n", "User not found")
+			return -1, fmt.Errorf("%s\n", "User not found")
 		}
-		return uID, fmt.Errorf("%s\n", err)
+		return -1, fmt.Errorf("%s\n", err)
 	}
-	return uID, nil
+	return user.ID, nil
 }
+
 func (u UserHandler) getPlan(id int) (models.Plan, error) {
 	var plan models.Plan
 	var s []byte
@@ -49,35 +52,35 @@ func (u UserHandler) getPlan(id int) (models.Plan, error) {
 	return plan, nil
 }
 
-func (u UserHandler) UpdateStepStatus(userId int, stepId int) error {
+func (u UserHandler) UpdateStepStatus(userId int, stepID int) (*models.Step, error) {
 	var steps []models.Step
 	var s []byte
 	if err := u.db.QueryRow("Select steps FROM plans WHERE user_id = $1", userId).Scan(&s); err != nil {
-		return err
+		return nil, err
 	}
 	json.Unmarshal(s, &steps)
-	if steps[stepId].Done {
-		steps[stepId].Done = false
+	if steps[stepID].Done {
+		steps[stepID].Done = false
 		updatedSteps, err := json.Marshal(&steps)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		_, err = u.db.Exec("UPDATE plans SET steps = $1 WHERE user_id = $2", updatedSteps, userId)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	} else {
-		steps[stepId].Done = true
+		steps[stepID].Done = true
 		updatedSteps, err := json.Marshal(&steps)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		_, err = u.db.Exec("UPDATE plans SET steps = $1 WHERE user_id = $2", updatedSteps, userId)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return &steps[stepID], nil
 }
 
 func (u UserHandler) HomePage(c echo.Context) error {
@@ -97,19 +100,25 @@ func (u UserHandler) PlanPage(c echo.Context) error {
 }
 
 func (u UserHandler) HandleUpdateStepStatus(c echo.Context) error {
-	sId := c.QueryParam("step")
-	userId, err := u.getUserID(c)
+	sID := c.FormValue("step")
+	pID := c.FormValue("plan")
+	userID, err := u.getUserID(c)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	stepId, err := strconv.Atoi(sId)
+	fmt.Println(sID)
+	stepID, err := strconv.Atoi(sID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	err = u.UpdateStepStatus(userId, stepId)
+	planID, err := strconv.Atoi(pID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusOK, "Status updated")
+	step, err := u.UpdateStepStatus(userID, stepID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return render(c, user.PlanStep(step.ID, planID, step.Done, step.Description))
 
 }

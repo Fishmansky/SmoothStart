@@ -124,7 +124,7 @@ func (a AuthHandler) IsUser(next echo.HandlerFunc) echo.HandlerFunc {
 		if isAdmin {
 			return c.JSON(http.StatusUnauthorized, "You are admin, not user")
 		}
-
+		c.Set("username", token.Username)
 		return next(c)
 	}
 }
